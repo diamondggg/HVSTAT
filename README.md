@@ -1,5 +1,12 @@
-HVSTAT DEV NOTES
+HVSTAT NOTES
 ================
+
+Use
+---
+Firefox: Drag and drop the .xpi into Firefox, "install."
+Opera: Drag and drop the [chrome].crx into Opera, and click "install," "enable."
+Chrome: Switch to Linux or a different browser/fork.
+
 General programming remarks
 ---------------------------
 Always use easy to understand variable names.
@@ -19,8 +26,5 @@ data/hvstat.user.js - Ln 69 (First line of 'var hvStat')
 
 Release Info
 ------------
-- For Opera, name the crx "HVS\_opera\_[VERSION].nex"
-- For Chrome, name the crx "HVS\_chrome\_[VERSION].crx"
+- For Opera/Chrome, name the crx "HVS\_chrome\_[VERSION].crx"
 - For Firefox, name zipped package "HVS\_firefox\_[VERSION].xpi"
-
-No one needs the privatekey (pem file) except developers.
