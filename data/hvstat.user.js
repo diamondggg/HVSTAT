@@ -9,7 +9,7 @@
 // @exclude         http://alt.hentaiverse.org/pages/showequip*
 // @exclude         http://alt.hentaiverse.org/?login*
 // @author          Various (http://forums.e-hentai.org/index.php?showtopic=79552)
-// @version         5.6.8.2
+// @version         5.6.8.3.1
 // @require         scripts/util.js
 // @require         scripts/browser.js
 // @require         scripts/hv.js
@@ -66,7 +66,7 @@ window.IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 // HV STAT object
 //------------------------------------
 var hvStat = {
-	version: "5.6.8.2",
+	version: "5.6.8.3",
 	imageResources: [
 		new browser.I("images/", "channeling.png", "css/images/"),
 		new browser.I("images/", "healthpot.png", "css/images/"),
@@ -587,7 +587,7 @@ hvStat.storage.initialValue = {
 		// - Effects Expiring Warnings
 		isMainEffectsAlertSelf: false,
 		isEffectsAlertSelf: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-		EffectsAlertSelfRounds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		EffectsAlertSelfRounds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0],
 		isMainEffectsAlertMonsters: false,
 		isEffectsAlertMonsters: [false, false, false, false, false, false, false, false, false, false, false, false],
 		EffectsAlertMonstersRounds: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -630,7 +630,7 @@ hvStat.storage.initialValue = {
 			staff: 0,
 			clothArmor: 0,
 			lightArmor: 0,
-			heavyArmor: 0,
+			heavyArmor: 0,            
 			elemental: 0,
 			divine: 0,
 			forbidden: 0,
@@ -1313,18 +1313,20 @@ hvStat.gadget.proficiencyPopupIcon = {
 		this.popup.innerHTML = browser.extension.getResourceText("html/", "proficiency-table.html");
 		var tableData = this.popup.querySelectorAll('td');
 		var prof = hvStat.characterStatus.proficiencies;
+        //Equipment
 		tableData[ 0].textContent = prof.oneHanded.toFixed(2);
 		tableData[ 2].textContent = prof.twoHanded.toFixed(2);
 		tableData[ 4].textContent = prof.dualWielding.toFixed(2);
-		tableData[ 6].textContent = prof.staff.toFixed(2);
-		tableData[ 8].textContent = prof.clothArmor.toFixed(2);
-		tableData[10].textContent = prof.lightArmor.toFixed(2);
-		tableData[12].textContent = prof.heavyArmor.toFixed(2);
-		tableData[ 1].textContent = prof.elemental.toFixed(2);
-		tableData[ 3].textContent = prof.divine.toFixed(2);
-		tableData[ 5].textContent = prof.forbidden.toFixed(2);
-		tableData[ 7].textContent = prof.deprecating.toFixed(2);
-		tableData[ 9].textContent = prof.supportive.toFixed(2);
+		tableData[ 6].textContent = prof.clothArmor.toFixed(2);
+		tableData[ 8].textContent = prof.lightArmor.toFixed(2);
+		tableData[10].textContent = prof.heavyArmor.toFixed(2);
+        //Magic
+        tableData[ 1].textContent = prof.staff.toFixed(2);
+		tableData[ 3].textContent = prof.elemental.toFixed(2);
+		tableData[ 5].textContent = prof.divine.toFixed(2);
+		tableData[ 7].textContent = prof.forbidden.toFixed(2);
+		tableData[ 9].textContent = prof.deprecating.toFixed(2);
+		tableData[11].textContent = prof.supportive.toFixed(2);
 		this.icon.appendChild(this.popup);
 	},
 	onmouseover: function (event) {
@@ -2482,7 +2484,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 			}
 		},
 	},
-	MONSTER_DEFENSE: {
+/* 	MONSTER_DEFENSE: {
 		regex: /^(.+?) (evades|parries|resists) your (attack|spell)\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
@@ -2492,6 +2494,30 @@ hvStat.battle.eventLog.messageTypeParams = {
 				// TODO
 			} else if (method === "spell") {
 				// TODO
+			}
+		},
+	}, */
+     MONSTER_DEFENSE: { //Tenrag's code. To be checked
+		regex: /^(.+?) (evades|parries|resists) your (attack|spell)\.$/,
+		relatedMessageTypeNames: null,
+		contentType: "text",
+		evaluationFn: function (message) {
+			var method = message.regexResult[3];
+			var methodType = message.regexResult[2];
+			if (method === "attack") {
+				hvStat.roundContext.aAttempts++;
+				if (methodType === "evades") {
+					hvStat.roundContext.maEvades++;
+				} else if (methodType === "parries") {
+					hvStat.roundContext.mParries++;
+				}
+			} else if (method === "spell") {
+				hvStat.roundContext.sAttempts++;
+				if (methodType === "evades") {
+					hvStat.roundContext.msEvades++;
+				} else if (methodType === "resists") {
+					hvStat.roundContext.mResists++;
+				}
 			}
 		},
 	},
@@ -2611,13 +2637,13 @@ hvStat.battle.eventLog.messageTypeParams = {
 			}
 		},
 	},
-	RESTORATION: {
+	/*RESTORATION: {
 		regex: /^(.+?) restores (\d+(?:\.\d+)?) points of (.+?)\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
-		evaluationFn: function (message) {
+		evaluationFn: function (message){  //TODO
 		},
-	},
+	},*/
 	MELEE_MISS: {
 		regex: /^Your attack misses its mark/,
 		relatedMessageTypeNames: null,
@@ -2644,13 +2670,13 @@ hvStat.battle.eventLog.messageTypeParams = {
 			}
 		},
 	},
-	SPIRIT_SHIELD_SUCCESS: {
+	/*SPIRIT_SHIELD_SUCCESS: {
 		regex: /^Your spirit shield absorbs (\d+(?:\.\d+)?) points of damage from the attack into (\d+(?:\.\d+)?) points of spirit damage\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
-		evaluationFn: function (message) {
+		evaluationFn: function (message) {//TODO
 		},
-	},
+	},*/
 	PROFICIENCY_GAIN: {
 		regex: /^You gain 0\.0(\d) points of (.+?) proficiency\.$/,
 		relatedMessageTypeNames: null,
@@ -2718,7 +2744,12 @@ hvStat.battle.eventLog.messageTypeParams = {
 		regex: /^The effect (.+?) on (.+?) has expired\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
-		evaluationFn: function (message) {
+		evaluationFn: function (message) {//TODO - check
+			var effectName = message.regexResult[1];
+			var i = hvStat.battle.warningSystem.monsterEffectNames.indexOf(effectName);
+ 			if (i !== -1 && hvStat.settings.isEffectsAlertMonsters[i] && hvStat.settings.EffectsAlertMonstersRounds[i] === "-1") {
+				hvStat.battle.warningSystem.enqueueAlert(effectName + " on " + message.regexResult[2] + " has expired");
+			}
 		},
 	},
 	CAST: {
@@ -2869,7 +2900,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 				hvStat.battle.warningSystem.enqueueAlert("Spark of Life has expired!!");
 			}
 			var i = hvStat.battle.warningSystem.selfEffectNames.indexOf(effectName === "Regen II" ? "Regen" : effectName);
-			if (i !== -1 && hvStat.settings.isEffectsAlertSelf[i] && hvStat.settings.EffectsAlertSelfRounds[i] === "-1") {
+ 			if (i !== -1 && hvStat.settings.isEffectsAlertSelf[i] && hvStat.settings.EffectsAlertSelfRounds[i] === "-1") {
 				hvStat.battle.warningSystem.enqueueAlert(effectName + " has expired");
 			}
 		},
@@ -5184,7 +5215,7 @@ hvStat.battle.warningSystem = {
 		"Protection", "Hastened", "Shadow Veil", "Regen", "Absorbing Ward",
 		"Spark of Life", "Channeling", "Arcane Focus", "Heartseeker", "Spirit Shield",
 		"_", "_", "_", "_",
-		"Chain 1", "Chain 2",
+		"Chain 1", "Chain 2", "Replenishment", "Regeneration",
 	],
 	monsterEffectNames: [
 		"Vital Theft", "Slowed", "Weakened", "Asleep", "Confused",

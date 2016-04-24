@@ -1189,6 +1189,8 @@ function initSettingsPane() {
 	if (hvStat.settings.isEffectsAlertSelf[13]) $("input[name=isEffectsAlertSelf13]").attr("checked", "checked");
 	if (hvStat.settings.isEffectsAlertSelf[14]) $("input[name=isEffectsAlertSelf14]").attr("checked", "checked");
 	if (hvStat.settings.isEffectsAlertSelf[15]) $("input[name=isEffectsAlertSelf15]").attr("checked", "checked");
+    if (hvStat.settings.isEffectsAlertSelf[16]) $("input[name=isEffectsAlertSelf16]").attr("checked", "checked");
+	if (hvStat.settings.isEffectsAlertSelf[17]) $("input[name=isEffectsAlertSelf17]").attr("checked", "checked");
 	$("input[name=EffectsAlertSelfRounds0]").attr("value", hvStat.settings.EffectsAlertSelfRounds[0]);
 	$("input[name=EffectsAlertSelfRounds1]").attr("value", hvStat.settings.EffectsAlertSelfRounds[1]);
 	$("input[name=EffectsAlertSelfRounds2]").attr("value", hvStat.settings.EffectsAlertSelfRounds[2]);
@@ -1204,6 +1206,8 @@ function initSettingsPane() {
 	$("input[name=EffectsAlertSelfRounds13]").attr("value", hvStat.settings.EffectsAlertSelfRounds[13]);
 	$("input[name=EffectsAlertSelfRounds14]").attr("value", hvStat.settings.EffectsAlertSelfRounds[14]);
 	$("input[name=EffectsAlertSelfRounds15]").attr("value", hvStat.settings.EffectsAlertSelfRounds[15]);
+	$("input[name=EffectsAlertSelfRounds16]").attr("value", hvStat.settings.EffectsAlertSelfRounds[16]);
+	$("input[name=EffectsAlertSelfRounds17]").attr("value", hvStat.settings.EffectsAlertSelfRounds[17]);    
 	if (hvStat.settings.isMainEffectsAlertMonsters) $("input[name=isMainEffectsAlertMonsters]").attr("checked", "checked");
 	if (hvStat.settings.isEffectsAlertMonsters[0]) $("input[name=isEffectsAlertMonsters0]").attr("checked", "checked");
 	if (hvStat.settings.isEffectsAlertMonsters[1]) $("input[name=isEffectsAlertMonsters1]").attr("checked", "checked");
@@ -1547,6 +1551,9 @@ function saveSettings() {
 	hvStat.settings.isEffectsAlertSelf[13] = false;	// Storm Spikes is obsolete
 	hvStat.settings.isEffectsAlertSelf[14] = $("input[name=isEffectsAlertSelf14]").get(0).checked;
 	hvStat.settings.isEffectsAlertSelf[15] = $("input[name=isEffectsAlertSelf15]").get(0).checked;
+    hvStat.settings.isEffectsAlertSelf[16] = $("input[name=isEffectsAlertSelf16]").get(0).checked;
+	hvStat.settings.isEffectsAlertSelf[17] = $("input[name=isEffectsAlertSelf17]").get(0).checked;
+
 	hvStat.settings.EffectsAlertSelfRounds[0] = $("input[name=EffectsAlertSelfRounds0]").get(0).value;
 	hvStat.settings.EffectsAlertSelfRounds[1] = $("input[name=EffectsAlertSelfRounds1]").get(0).value;
 	hvStat.settings.EffectsAlertSelfRounds[2] = $("input[name=EffectsAlertSelfRounds2]").get(0).value;
@@ -1563,6 +1570,10 @@ function saveSettings() {
 	hvStat.settings.EffectsAlertSelfRounds[13] = 0;	// Storm Spikes is obsolete
 	hvStat.settings.EffectsAlertSelfRounds[14] = $("input[name=EffectsAlertSelfRounds14]").get(0).value;
 	hvStat.settings.EffectsAlertSelfRounds[15] = $("input[name=EffectsAlertSelfRounds15]").get(0).value;
+	//hvStat.settings.EffectsAlertSelfRounds[14] = $("input[name=EffectsAlertSelfRounds16]").get(0).value;
+	//hvStat.settings.EffectsAlertSelfRounds[15] = $("input[name=EffectsAlertSelfRounds17]").get(0).value;    
+	hvStat.settings.EffectsAlertSelfRounds[16] = $("input[name=EffectsAlertSelfRounds16]").get(0).value;
+	hvStat.settings.EffectsAlertSelfRounds[17] = $("input[name=EffectsAlertSelfRounds17]").get(0).value; 
 	hvStat.settings.isMainEffectsAlertMonsters = $("input[name=isMainEffectsAlertMonsters]").get(0).checked;
 	hvStat.settings.isEffectsAlertMonsters[0] = $("input[name=isEffectsAlertMonsters0]").get(0).checked;
 	hvStat.settings.isEffectsAlertMonsters[1] = $("input[name=isEffectsAlertMonsters1]").get(0).checked;

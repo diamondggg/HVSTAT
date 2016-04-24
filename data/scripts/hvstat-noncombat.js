@@ -27,15 +27,17 @@ hvStat.noncombat.support = {
 		hvStat.storage.characterStatus.save();
 	},
 	captureProficiencies: function () {
-		var proficiencyTable = document.getElementById("leftpane").children[1].querySelectorAll('div.fd4');
-		var prof = hvStat.characterStatus.proficiencies;
+		var proficiencyTable = document.getElementById("leftpane").children[2].querySelectorAll('div.fd4');
+        var prof = hvStat.characterStatus.proficiencies;
+        //Equipment Proficiencies
 		prof.oneHanded = Number(hv.util.innerText(proficiencyTable[2]));
 		prof.twoHanded = Number(hv.util.innerText(proficiencyTable[4]));
 		prof.dualWielding = Number(hv.util.innerText(proficiencyTable[6]));
-		prof.staff = Number(hv.util.innerText(proficiencyTable[8]));
-		prof.clothArmor = Number(hv.util.innerText(proficiencyTable[10]));
-		prof.lightArmor = Number(hv.util.innerText(proficiencyTable[12]));
-		prof.heavyArmor = Number(hv.util.innerText(proficiencyTable[14]));
+		prof.clothArmor = Number(hv.util.innerText(proficiencyTable[8]));
+		prof.lightArmor = Number(hv.util.innerText(proficiencyTable[10]));
+		prof.heavyArmor = Number(hv.util.innerText(proficiencyTable[12]));
+        //Magic Proficiencies
+        prof.staff = Number(hv.util.innerText(proficiencyTable[15]));
 		prof.elemental = Number(hv.util.innerText(proficiencyTable[17]));
 		prof.divine = Number(hv.util.innerText(proficiencyTable[19]));
 		prof.forbidden = Number(hv.util.innerText(proficiencyTable[21]));
