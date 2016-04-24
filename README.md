@@ -4,7 +4,9 @@ HVSTAT NOTES
 Use
 ---
 Firefox: Drag and drop the .xpi into Firefox, "install."
+
 Opera: Drag and drop the [chrome].crx into Opera, and click "install," "enable."
+
 Chrome: Switch to Linux or a different browser/fork.
 
 General programming remarks
