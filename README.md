@@ -9,7 +9,9 @@ Firefox: Drag and drop the .xpi into Firefox, "install."
 
 Opera: Drag and drop the [chrome].crx into Opera, and click "install," "enable."
 
-Chrome: Switch to Linux or a different browser/fork. My understanding is that the only way to run the extension in Chrome is via developer mode, using "load unpacked extension," which I discourage.
+Chrome: Switch to Linux or a different browser/fork. 
+
+    My understanding is that the only way to run the extension in Chrome is via developer mode, using "load unpacked extension," which I discourage.
 
 General programming remarks
 ---------------------------
