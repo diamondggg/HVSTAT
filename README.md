@@ -13,6 +13,10 @@ Chrome: Switch to Linux or a different browser/fork.
 
     My understanding is that the only way to run the extension in Chrome is via developer mode, using "load unpacked extension," which I discourage.
 
+Warning
+-------
+I don't know how this extension will handle old data; I take no responsiblity for **when/what** (not *if*) it breaks - make backups.
+
 General programming remarks
 ---------------------------
 Always use easy to understand variable names.
