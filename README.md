@@ -3,6 +3,8 @@ HVSTAT NOTES
 
 Use
 ---
+Download via "releases." (Control + f "releases")
+
 Firefox: Drag and drop the .xpi into Firefox, "install."
 
 Opera: Drag and drop the [chrome].crx into Opera, and click "install," "enable."
