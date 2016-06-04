@@ -9,7 +9,7 @@
 // @exclude         http://alt.hentaiverse.org/pages/showequip*
 // @exclude         http://alt.hentaiverse.org/?login*
 // @author          Various (http://forums.e-hentai.org/index.php?showtopic=79552)
-// @version         5.6.8.3.1
+// @version         5.6.8.4
 // @require         scripts/util.js
 // @require         scripts/browser.js
 // @require         scripts/hv.js
@@ -66,7 +66,7 @@ window.IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 // HV STAT object
 //------------------------------------
 var hvStat = {
-	version: "5.6.8.3",
+	version: "5.6.8.4",
 	imageResources: [
 		new browser.I("images/", "channeling.png", "css/images/"),
 		new browser.I("images/", "healthpot.png", "css/images/"),
@@ -2451,7 +2451,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 		},
 	},
 	MONSTER_SKILL_HIT: {
-		regex: /^(.+?) (uses|casts) (.+?)\, and (hits|crits) you for (\d+(?:\.\d+)?) (.+?) damage\.$/,
+		regex: /^(.+?) (uses|casts) (.+?)\, and (hits|crits) you for (\d+(?:\.\d+)?) (.+?) damage/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
 		evaluationFn: function (message) {

@@ -164,7 +164,7 @@ hv.elementCache = {
 };
 
 hv.initialize = function () {
-	this.util.isUsingHVFontEngine = util.innerText(hv.elementCache.infoTables[0]).indexOf("Level") === -1;
+	this.util.isUsingHVFontEngine = util.innerText(hv.elementCache.infoTables[0]).indexOf("Stamina") === -1;  // -hw-
 	var settings = {
 		isUsingHVFontEngine: this.util.isUsingHVFontEngine,
 		get difficulty() {
