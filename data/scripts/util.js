@@ -53,15 +53,6 @@ var util = {
 		}
 		return s;
 	},
-	siteScriptElement: null,
-	addSiteScript: function (fn) {
-		if (!this.siteScriptElement) {
-			this.scriptElement = document.createElement("script");
-			this.scriptElement.type = "text/javascript";
-			document.body.appendChild(this.scriptElement);
-		}
-		this.scriptElement.textContent += '\n' + String(fn) + '\n';
-	},
 };
 util.CallbackQueue = function () {
 	this.closures = [];

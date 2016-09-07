@@ -45,7 +45,6 @@
 // @resource        settings-pane.html                          html/settings-pane.html
 // @resource        shrine-pane.html                            html/shrine-pane.html
 // @resource        drops-display-table.json                    json/drops-display-table.json
-// @resource        hvstat-injection.js                         scripts/hvstat-injection.js
 // @resource        hvstat-migration.js                         scripts/hvstat-migration.js
 // @resource        hvstat-noncombat.js                         scripts/hvstat-noncombat.js
 // @resource        hvstat-ui.js                                scripts/hvstat-ui.js
@@ -5617,8 +5616,26 @@ hvStat.startup = {
 
 		if (hv.battle.isActive) {
 			if (hvStat.settings.adjustKeyEventHandling) {
-				var siteScript = browser.extension.getResourceText("scripts/", "hvstat-injection.js");
-				util.addSiteScript(siteScript);
+				var modifier = function() {
+					var onkeydown = null;
+					document.addEventListener("hvstatcomplete", function(event) {
+						this.removeEventListener(event.type, arguments.callee);
+						if (onkeydown) document.onkeydown = onkeydown;
+					});
+					var disableDocumentKeydown = function() {
+						onkeydown = document.onkeydown;
+						document.onkeydown = null;
+					}
+					if (document.readyState !== "loading") {
+						disableDocumentKeydown();
+					} else {
+						document.addEventListener("readystatechange", function(event) {
+							this.removeEventListener(event.type, arguments.callee);
+							disableDocumentKeydown();
+						});
+					}
+				}
+				browser.extension.modifyEventHandler(modifier, "");
 			}
 			util.document.extractBody();
 			hvStat.gadget.initialize();
@@ -5724,7 +5741,7 @@ hvStat.startup = {
 					hvStat.noncombat.support.popup.addObserver();
 				}
 				if (hvStat.settings.isDisableForgeHotKeys) {
-					util.addSiteScript('document.onkeypress = null;');
+					browser.extension.modifyEventHandler(function() { document.onkeypress = null; }, "");
 				}
 				break;
 			case "moogleMailWriteNew":
