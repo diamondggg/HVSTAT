@@ -14,6 +14,11 @@ browser.extension = {
 	},
 	loadScript: function (scriptPath, scriptName) {
 		eval.call(window, browser.extension.getResourceText(scriptPath, scriptName));
+	},
+	modifyEventHandler: function (modifier, param) {
+		// Firefox extensions share Element.onclick and similar with the page,
+		// so just call the worker
+		modifier(param);
 	}
 };
 

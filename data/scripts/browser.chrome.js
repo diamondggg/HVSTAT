@@ -19,6 +19,14 @@ browser.extension = {
 	},
 	loadScript: function (scriptPath, scriptName) {
 		eval.call(window, browser.extension.getResourceText(scriptPath, scriptName));
+	},
+	modifyEventHandler: function (modifier, param) {
+		// Chromium extensions have their own view of Element.onclick and similar,
+		// so inject script element into the page
+		var scriptElement = document.createElement("script");
+		scriptElement.type = "text/javascript";
+		scriptElement.textContent = "(" + modifier.toString() + ")(" + JSON.stringify(param) + ");";
+		document.body.appendChild(scriptElement);
 	}
 };
 
