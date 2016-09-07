@@ -1,0 +1,6 @@
+data/manifest.json
+data/options.html
+data/background.js
+data/scripts/browser.chrome.js
+*.xpi
+.jpmignore

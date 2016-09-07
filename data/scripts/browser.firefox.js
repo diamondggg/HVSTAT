@@ -2,33 +2,15 @@
 // Browser utilities
 //------------------------------------
 var browser = {
-	get isChrome() {
-		return navigator.userAgent.indexOf("Chrome") >= 0;
-	},
+	isChrome: false,
 };
 
 browser.extension = {
 	getResourceURL: function (resourcePath, resourceName) {
-		var resourceURL;
-		if (browser.isChrome) {
-			resourceURL = chrome.extension.getURL(resourcePath + resourceName);
-		} else {
-			resourceURL = self.options.relPath + resourcePath + resourceName;
-		}
-		return resourceURL;
+		return self.options.relPath + resourcePath + resourceName;
 	},
 	getResourceText: function (resourcePath, resourceName) {
-		var resourceText;
-		if (browser.isChrome) {
-			var request = new XMLHttpRequest();
-			var resourceURL = browser.extension.getResourceURL(resourcePath, resourceName);
-			request.open("GET", resourceURL, false);
-			request.send(null);
-			resourceText = request.responseText;
-		} else {
-            resourceText = self.options[resourceName];
-		}
-		return resourceText;
+		return self.options[resourceName];
 	},
 	loadScript: function (scriptPath, scriptName) {
 		eval.call(window, browser.extension.getResourceText(scriptPath, scriptName));

@@ -11,7 +11,7 @@
 	"content_scripts": [ {
 		"js": [
 			"scripts/util.js",
-			"scripts/browser.js",
+			"scripts/browser.chrome.js",
 			"scripts/hv.js",
 			"hvstat.user.js"
 		],
