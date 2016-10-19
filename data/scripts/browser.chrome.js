@@ -20,12 +20,15 @@ browser.extension = {
 	loadScript: function (scriptPath, scriptName) {
 		eval.call(window, browser.extension.getResourceText(scriptPath, scriptName));
 	},
+	eventHandlerId: 0,
 	modifyEventHandler: function (modifier, param) {
 		// Chromium extensions have their own view of Element.onclick and similar,
 		// so inject script element into the page
 		var scriptElement = document.createElement("script");
 		scriptElement.type = "text/javascript";
-		scriptElement.textContent = "(" + modifier.toString() + ")(" + JSON.stringify(param) + ");";
+		var id = "hvstat-tempjs-" + this.eventHandlerId++;
+		scriptElement.id = id;
+		scriptElement.textContent = "(" + modifier.toString() + ")(" + JSON.stringify(param) + ");document.body.removeChild(document.getElementById('"+id+"'));";
 		document.body.appendChild(scriptElement);
 	}
 };

@@ -1219,8 +1219,12 @@ hvStat.gadget = {
 		new browser.I("images/", "ui-icons_cd0a0a_256x240.png", "css/images/"),
 		new browser.I("images/", "animated-overlay.gif", "css/images/"),
 	],
+	isStyleAdded: false,
 	addStyle: function () {
-		browser.extension.style.addFromResource("css/", "jquery-ui-1.11.4.custom.min.css", this.imageResources);
+		if (!this.isStyleAdded) {
+			browser.extension.style.addFromResource("css/", "jquery-ui-1.11.4.custom.min.css", this.imageResources);
+			this.isStyleAdded = true;
+		}
 	},
 	initialize: function () {
 		if (hvStat.settings.isShowEquippedSet) {
@@ -1237,7 +1241,11 @@ hvStat.gadget = {
 };
 
 hvStat.gadget.wrenchIcon = {
+	initialized: false,
 	create: function () {
+		if (this.initialized) {
+			return;
+		}
 		var stuffBox = hv.elementCache.stuffBox;
 		var icon = document.createElement("div");
 		icon.id = "hvstat-icon";
@@ -1247,6 +1255,7 @@ hvStat.gadget.wrenchIcon = {
 		icon.addEventListener("mouseover", this.onmouseover);
 		icon.addEventListener("mouseout", this.onmouseout);
 		stuffBox.insertBefore(icon, null);
+		this.initialized = true;
 	},
 	onclick: function (event) {
 		this.removeEventListener(event.type, arguments.callee);
@@ -1263,7 +1272,11 @@ hvStat.gadget.wrenchIcon = {
 };
 
 hvStat.gadget.equippedSet = {
+	initialized: false,
 	create: function () {
+		if (this.initialized) {
+			return;
+		}
 		var leftBar = hv.elementCache.leftBar;
 		var table = document.createElement("table");
 		table.className = "cit";
@@ -1276,6 +1289,7 @@ hvStat.gadget.equippedSet = {
 		div1.style.cssText = hv.elementCache.infoTables[0].children[0].children[0].children[0].children[0].children[0].style.cssText;
 		div1.textContent = "Equipped set: " + hvStat.characterStatus.equippedSet;
 		leftBar.insertBefore(table, null);
+		this.initialized = true;
 	},
 };
 
@@ -1284,6 +1298,13 @@ hvStat.gadget.proficiencyPopupIcon = {
 	popup: null,
 	create: function () {
 		if (!hvStat.characterStatus.areProficienciesCaptured) {
+			return;
+		}
+		if (this.icon) {
+			if (this.popup) {
+				this.icon.removeChild(this.popup);
+				this.popup = null;
+			}
 			return;
 		}
 		this.icon = document.createElement("div");
@@ -1332,7 +1353,11 @@ hvStat.gadget.proficiencyPopupIcon = {
 };
 
 hvStat.gadget.inventoryWarningIcon = {
+	initialized: false,
 	create: function () {
+		if (this.initialized) {
+			return;
+		}
 		var stuffBox = hv.elementCache.stuffBox;
 		var icon = document.createElement("div");
 		icon.id = "hvstat-inventory-warning-icon";
@@ -1344,9 +1369,11 @@ hvStat.gadget.inventoryWarningIcon = {
 				hvStat.characterStatus.didReachInventoryLimit = false;
 				hvStat.storage.characterStatus.save();
 				this.parentNode.removeChild(this);
+				this.initialized = false;
 			}
 		});
 		stuffBox.insertBefore(icon, null);
+		this.initialized = true;
 	},
 };
 
@@ -3030,6 +3057,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 							monster.getFromDB(function () {
 								monster.showStatus();
 								if (hvStat.battle.monster.areAllMonstersFinishedGettingFromDb) {
+									hvStat.database.loadingMonsterInfoFromDB = false;
 									hvStat.storage.roundContext.save();
 								}
 							});
@@ -3438,6 +3466,10 @@ hvStat.battle.command = {
 			}
 		}
 		return this._menuItemMap;
+	},
+	reset: function() {
+		this._commandMap = null;
+		this._menuItemMap = null;
 	},
 	getMenuItemById: function (menuItemId) {
 		var commandMap = hvStat.battle.command.commandMap;
@@ -3901,6 +3933,13 @@ hvStat.battle.enhancement.scanButton = {
 			if (monsters[i].innerHTML.indexOf("bardead") >= 0) {
 				continue;
 			}
+			var buttonExists = false;
+			for (var j = 0; j < monsters[i].children.length; j++) {
+				if (monsters[i].children[j].className.indexOf("hvstat-scan-button") >= 0)
+					buttonExists = true;
+			}
+			if (buttonExists)
+				continue;
 			var button = this.create(monsters[i]);
 			if (button) {
 				monsters[i].insertBefore(button, null);
@@ -3956,6 +3995,9 @@ hvStat.battle.enhancement.skillButton = {
 		if (skill3) {
 			skills.push(skill3);
 		}
+		if (!skills.length) {
+			return;
+		}
 		hv.battle.elementCache.mainPane.style.overflow = "visible";
 		hv.battle.elementCache.monsterPane.style.overflow = "visible";
 		var monsters = hv.battle.elementCache.monsters;
@@ -3963,6 +4005,13 @@ hvStat.battle.enhancement.skillButton = {
 			if (monsters[i].innerHTML.indexOf("bardead") >= 0) {
 				continue;
 			}
+			var buttonExists = false;
+			for (var j = 0; j < monsters[i].children.length; j++) {
+				if (monsters[i].children[j].className.indexOf("hvstat-skill-button") >= 0)
+					buttonExists = true;
+			}
+			if (buttonExists)
+				continue;
 			for (var j = 0; j < skills.length; j++) {
 				var button = this.create(monsters[i], skills[j], j + 1);
 				if (button) {
@@ -3991,6 +4040,9 @@ hvStat.battle.enhancement.monsterLabel = {
 		var targets = hv.battle.elementCache.monsterPane.querySelectorAll('div.btm1 > div.btm2 > div > img');
 		for (var i = 0; i < targets.length; i++) {
 			var target = targets[i];
+			if (target.className.indexOf("hvstat-monster-number") >= 0) {
+				continue;
+			}
 			target.className += " hvstat-monster-number";
 			var parentNode = target.parentNode;
 			var div = document.createElement("div");
@@ -4491,6 +4543,10 @@ hvStat.battle.monster.Monster.prototype = {
 		var nameInnerFrameElement = that._baseElement.children[1].children[0];
 		var maxAbbrLevel = hvStat.settings.ResizeMonsterInfo ? 5 : 1;
 		var maxStatsWidth = 315;
+
+		if (nameOuterFrameElement.children[nameOuterFrameElement.children.length - 1].className.indexOf("hvstat-monster-status") >= 0) {
+			return;
+		}
 
 		var html, statsHtml;
 		var div;
@@ -5604,6 +5660,7 @@ hvStat.startup = {
 		hvStat.gadget.addStyle();
 
 		if (hv.battle.isActive) {
+			hvStat.battle.command.reset();
 			if (hvStat.settings.adjustKeyEventHandling) {
 				var modifier = function() {
 					var onkeydown = null;
@@ -5681,6 +5738,10 @@ hvStat.startup = {
 			document.addEventListener("keydown", hvStat.battle.keyboard.documentKeydown);
 			if (hvStat.settings.adjustKeyEventHandling) {
 				document.dispatchEvent(new CustomEvent("hvstatcomplete"));
+			}
+			if (!hvStat.startup.reloaderWatched) {
+				window.addEventListener("Reloader_reloaded", hvStat.startup.phase2);
+				hvStat.startup.reloaderWatched = true;
 			}
 		} else if (hv.location === "riddle") {
 			hvStat.gadget.initialize();
@@ -5767,6 +5828,7 @@ hvStat.startup = {
 			hvStat.gadget.initialize();
 		}
 	},
+	reloaderWatched: false,
 };
 
 hvStat.startup.phase1();
