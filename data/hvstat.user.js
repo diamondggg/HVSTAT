@@ -21,17 +21,11 @@
 // @resource        hide-logo.css                               css/hide-logo.css
 // @resource        hvstat.css                                  css/hvstat.css
 // @resource        hvstat-ui.css                               css/hvstat-ui.css
-// @resource        jquery-ui-1.9.2.custom.min.css              css/jquery-ui-1.9.2.custom.min.css
+// @resource        jquery-ui-1.11.4.custom.min.css             css/jquery-ui-1.11.4.custom.min.css
 // @resource        channeling.png                              css/images/channeling.png
 // @resource        healthpot.png                               css/images/healthpot.png
 // @resource        manapot.png                                 css/images/manapot.png
 // @resource        spiritpot.png                               css/images/spiritpot.png
-// @resource        ui-bg_flat_0_aaaaaa_40x100.png              css/images/ui-bg_flat_0_aaaaaa_40x100.png
-// @resource        ui-bg_flat_55_fbf9ee_40x100.png             css/images/ui-bg_flat_55_fbf9ee_40x100.png
-// @resource        ui-bg_flat_65_edebdf_40x100.png             css/images/ui-bg_flat_65_edebdf_40x100.png
-// @resource        ui-bg_flat_75_e3e0d1_40x100.png             css/images/ui-bg_flat_75_e3e0d1_40x100.png
-// @resource        ui-bg_flat_75_edebdf_40x100.png             css/images/ui-bg_flat_75_edebdf_40x100.png
-// @resource        ui-bg_flat_95_fef1ec_40x100.png             css/images/ui-bg_flat_95_fef1ec_40x100.png
 // @resource        ui-icons_2e83ff_256x240.png                 css/images/ui-icons_2e83ff_256x240.png
 // @resource        ui-icons_5c0d11_256x240.png                 css/images/ui-icons_5c0d11_256x240.png
 // @resource        ui-icons_cd0a0a_256x240.png                 css/images/ui-icons_cd0a0a_256x240.png
@@ -48,8 +42,8 @@
 // @resource        hvstat-migration.js                         scripts/hvstat-migration.js
 // @resource        hvstat-noncombat.js                         scripts/hvstat-noncombat.js
 // @resource        hvstat-ui.js                                scripts/hvstat-ui.js
-// @resource        jquery-1.8.3.min.js                         scripts/jquery-1.8.3.min.js
-// @resource        jquery-ui-1.9.2.custom.min.js               scripts/jquery-ui-1.9.2.custom.min.js
+// @resource        jquery-2.2.4.min.js                         scripts/jquery-2.2.4.min.js
+// @resource        jquery-ui-1.11.4.custom.min.js              scripts/jquery-ui-1.11.4.custom.min.js
 // @run-at          document-start
 // ==/UserScript==
 
@@ -1220,18 +1214,13 @@ hvStat.versions.functions = {
 //------------------------------------
 hvStat.gadget = {
 	imageResources: [
-		new browser.I("images/", "ui-bg_flat_0_aaaaaa_40x100.png", "css/images/"),
-		new browser.I("images/", "ui-bg_flat_55_fbf9ee_40x100.png", "css/images/"),
-		new browser.I("images/", "ui-bg_flat_65_edebdf_40x100.png", "css/images/"),
-		new browser.I("images/", "ui-bg_flat_75_e3e0d1_40x100.png", "css/images/"),
-		new browser.I("images/", "ui-bg_flat_75_edebdf_40x100.png", "css/images/"),
-		new browser.I("images/", "ui-bg_flat_95_fef1ec_40x100.png", "css/images/"),
 		new browser.I("images/", "ui-icons_2e83ff_256x240.png", "css/images/"),
 		new browser.I("images/", "ui-icons_5c0d11_256x240.png", "css/images/"),
 		new browser.I("images/", "ui-icons_cd0a0a_256x240.png", "css/images/"),
+		new browser.I("images/", "animated-overlay.gif", "css/images/"),
 	],
 	addStyle: function () {
-		browser.extension.style.addFromResource("css/", "jquery-ui-1.9.2.custom.min.css", this.imageResources);
+		browser.extension.style.addFromResource("css/", "jquery-ui-1.11.4.custom.min.css", this.imageResources);
 	},
 	initialize: function () {
 		if (hvStat.settings.isShowEquippedSet) {
