@@ -1,6 +1,6 @@
 {
 	"name": "HV Statistics, Tracking, and Analysis Tool",
-	"version": "5.6.8.3",
+	"version": "5.6.9",
 	"manifest_version": 2,
 	"description": "Collects data, analyzes statistics, and enhances the interface of the HentaiVerse",
 	"icons": {
@@ -11,7 +11,7 @@
 	"content_scripts": [ {
 		"js": [
 			"scripts/util.js",
-			"scripts/browser.js",
+			"scripts/browser.chrome.js",
 			"scripts/hv.js",
 			"hvstat.user.js"
 		],
@@ -29,20 +29,15 @@
 		"css/battle-log-type1.css",
 		"css/hvstat.css",
 		"css/hvstat-ui.css",
-		"css/jquery-ui-1.9.2.custom.min.css",
+		"css/jquery-ui-1.11.4.custom.min.css",
 		"css/images/channeling.png",
 		"css/images/healthpot.png",
 		"css/images/manapot.png",
 		"css/images/spiritpot.png",
-		"css/images/ui-bg_flat_0_aaaaaa_40x100.png",
-		"css/images/ui-bg_flat_55_fbf9ee_40x100.png",
-		"css/images/ui-bg_flat_65_edebdf_40x100.png",
-		"css/images/ui-bg_flat_75_e3e0d1_40x100.png",
-		"css/images/ui-bg_flat_75_edebdf_40x100.png",
-		"css/images/ui-bg_flat_95_fef1ec_40x100.png",
 		"css/images/ui-icons_2e83ff_256x240.png",
 		"css/images/ui-icons_5c0d11_256x240.png",
 		"css/images/ui-icons_cd0a0a_256x240.png",
+		"css/images/animated-overlay.gif",
 		"css/images/hvs.gif",
 		"css/images/throbber.gif",
 		"html/battle-stats-pane.html",
@@ -55,11 +50,11 @@
 		"html/settings-pane.html",
 		"html/shrine-pane.html",
 		"json/drops-display-table.json",
-		"scripts/hvstat-injection.js",
 		"scripts/hvstat-migration.js",
 		"scripts/hvstat-noncombat.js",
 		"scripts/hvstat-ui.js",
-		"scripts/jquery-1.8.3.min.js",
-		"scripts/jquery-ui-1.9.2.custom.min.js"
+		"scripts/jquery-2.2.4.min.js",
+		"scripts/jquery-ui-1.11.4.custom.min.js",
+		"scripts/browser.chrome.js"
 	]
 }

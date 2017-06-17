@@ -75,30 +75,37 @@ hvStat.noncombat.support = {
 		hvStat.storage.shrine.save();
 	},
 	confirmBeforeBattle: function () {
-		var elements = document.querySelectorAll('#mainpane img[onclick*="arenaform"]');
-		var i, element;
-		for (i = 0; i < elements.length; i++) {
-			element = elements[i];
-			var oldOnClick = element.getAttribute("onclick");
-			var newOnClick = 'if(confirm("Are you sure you want to start this challenge on ' +
-				hvStat.characterStatus.difficulty.name +
-				' difficulty, with set number: ' +
-				hvStat.characterStatus.equippedSet + '?\\n';
-			if (hvStat.settings.StartAlertHP > hv.character.healthPercent) {
-				newOnClick += '\\n - HP is only '+ hv.character.healthPercent + '%';
-			}
-			if (hvStat.settings.StartAlertMP > hv.character.magicPercent) {
-				newOnClick += '\\n - MP is only '+ hv.character.magicPercent + '%';
-			}
-			if (hvStat.settings.StartAlertSP > hv.character.spiritPercent) {
-				newOnClick += '\\n - SP is only '+ hv.character.spiritPercent + '%';
-			}
-			if (hvStat.settings.StartAlertDifficulty < hvStat.characterStatus.difficulty.index) {
-				newOnClick += '\\n - Difficulty is '+ hvStat.characterStatus.difficulty.name;
-			}
-			newOnClick += '")) {'+ oldOnClick+ '}';
-			element.setAttribute("onclick", newOnClick);
+		var message = "Are you sure you want to start this challenge on " +
+			hvStat.characterStatus.difficulty.name +
+			' difficulty, with set number: ' +
+			hvStat.characterStatus.equippedSet + '?\n';
+		if (hvStat.settings.StartAlertHP > hv.character.healthPercent) {
+			message += '\n - HP is only '+ hv.character.healthPercent + '%';
 		}
+		if (hvStat.settings.StartAlertMP > hv.character.magicPercent) {
+			message += '\n - MP is only '+ hv.character.magicPercent + '%';
+		}
+		if (hvStat.settings.StartAlertSP > hv.character.spiritPercent) {
+			message += '\n - SP is only '+ hv.character.spiritPercent + '%';
+		}
+		if (hvStat.settings.StartAlertDifficulty < hvStat.characterStatus.difficulty.index) {
+			message += '\n - Difficulty is '+ hvStat.characterStatus.difficulty.name;
+		}
+		var modifier = function(message) {
+			var elements = document.querySelectorAll('#mainpane img[onclick*="arenaform"]');
+			var i, element;
+			var makeNewOnClick = function(oldOnClick, message) {
+				return function(event) {
+					if (confirm(message)) {
+						oldOnClick(event);
+					}
+				}
+			}
+			for (i = 0; i < elements.length; i++) {
+				elements[i].onclick = makeNewOnClick(elements[i].onclick, message);
+			}
+		}
+		browser.extension.modifyEventHandler(modifier, message);
 	},
 };
 

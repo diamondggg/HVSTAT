@@ -92,11 +92,11 @@ hv.locationMap = {
 	"itemShopBot":		"?s=Bazaar&ss=ib",
 	"monsterLab":		"?s=Bazaar&ss=ml",
 	"shrine":			"?s=Bazaar&ss=ss",
-	"forge":			"?s=Bazaar&ss=fr",
-	"moogleMailInbox":		"?s=Bazaar&ss=mm&filter=Inbox",
-	"moogleMailWriteNew":	"?s=Bazaar&ss=mm&filter=Write%20New",
-	"moogleMailReadMail":	"?s=Bazaar&ss=mm&filter=Read%20Mail",
-	"moogleMailSentMail":	"?s=Bazaar&ss=mm&filter=Sent%20Mail",
+	"forge":			"?s=Forge",
+	"moogleMailInbox":		"?s=Bazaar&ss=mm&filter=inbox",
+	"moogleMailWriteNew":	"?s=Bazaar&ss=mm&filter=new",
+	"moogleMailReadMail":	"?s=Bazaar&ss=mm&filter=read",
+	"moogleMailSentMail":	"?s=Bazaar&ss=mm&filter=sent",
 	"moogleMail":		"?s=Bazaar&ss=mm",
 	"battle":			"?s=Battle&ss=ba",
 	"arena":			"?s=Battle&ss=ar",
@@ -164,7 +164,7 @@ hv.elementCache = {
 };
 
 hv.initialize = function () {
-	this.util.isUsingHVFontEngine = util.innerText(hv.elementCache.infoTables[0]).indexOf("Level") === -1;
+	this.util.isUsingHVFontEngine = util.innerText(hv.elementCache.infoTables[0]).indexOf("Stamina") === -1;  // -hw-
 	var settings = {
 		isUsingHVFontEngine: this.util.isUsingHVFontEngine,
 		get difficulty() {
