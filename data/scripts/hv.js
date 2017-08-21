@@ -24,10 +24,24 @@ hv.util = {
 		return Math.floor(value * 100);
 	},
 	isUsingHVFontEngine: null,
-	hvFontMap: "0123456789.,!?%+-=/\\'\":;()[]_           ABCDEFGHIJKLMNOPQRSTUVWXYZ ",
-	hvFontTextBlockSelector: 'div.fd2, div.fd4',
-	hvFontCharsLtoRSelector: 'div.f2lb, div.f2lg, div.f2lr, div.f2ly, div.f2la, div.f4lb, div.f4lg, div.f4lr, div.f4ly, div.f4la',
-	hvFontCharsRtoLSelector: 'div.f2rb, div.f2rg, div.f2rr, div.f2ry, div.f2ra, div.f4rb, div.f4rg, div.f4rr, div.f4ry, div.f4ra',
+	_hvFontMap: null,
+	get hvFontMap() {
+		if (!this._hvFontMap) {
+			var fntArray1 = "0123456789.,!?%+-=/\\'\":;()[]_";
+			var cssArray1 = "0123456789abcdefghijklmnopqrs";
+			var fntArray2 = " ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			var cssArray2 = "9abcdefghijklmnopqrstuvwxyz";
+			this._hvFontMap = {};
+			for (var i = 0; i < cssArray1.length; i++) {
+				this._hvFontMap['c2' + cssArray1[i]] = this._hvFontMap['c4' + cssArray1[i]] = fntArray1[i];
+			}
+			for (var i = 0; i < cssArray2.length; i++) {
+				this._hvFontMap['c3' + cssArray2[i]] = this._hvFontMap['c5' + cssArray2[i]] = fntArray2[i];
+			}
+		}
+		return this._hvFontMap;
+	},
+	hvFontTextBlockSelector: 'div.fl, div.fc, div.fr',
 	innerText: function (element) {
 		if (!this.isUsingHVFontEngine) {
 			return util.innerText(element);
@@ -37,7 +51,7 @@ hv.util = {
 		var textBlock, textBlocks;
 		var selfClassNames = element.className.split(' ');
 		//console.debug(selfClassNames);
-		if (selfClassNames.indexOf('fd2') >= 0 || selfClassNames.indexOf('fd4') >= 0) {
+		if (selfClassNames.indexOf('fl') >= 0 || selfClassNames.indexOf('fc') >= 0 || selfClassNames.indexOf('fr') >= 0) {
 			textBlocks = [element];
 		} else {
 			textBlocks = element.querySelectorAll(this.hvFontTextBlockSelector);
@@ -46,33 +60,17 @@ hv.util = {
 		var charDivsLtoR, charDivsRtoL, charDivs, charDiv, regexResult, index;
 		var i, j, len;
 		for (i = 0; i < textBlocks.length; i++) {
-			textBlock = textBlocks[i];
-			charDivsLtoR = textBlock.querySelectorAll(this.hvFontCharsLtoRSelector);
-			charDivsRtoL = textBlock.querySelectorAll(this.hvFontCharsRtoLSelector);
-			charDivs = [];
-			if (charDivsLtoR) {
-				len = charDivsLtoR.length;
-				for (j = 0; j < len; j++) {
-					charDivs[j] = charDivsLtoR[j];
+			var charDivs = textBlocks[i].children;
+			var text = [];
+			for (var j = 0; j < charDivs.length; j++) {
+				var className = charDivs[j].className;
+				if (className in this.hvFontMap) {
+					text.push(this.hvFontMap[className]);
 				}
 			}
-			if (charDivsRtoL) {
-				len = charDivsRtoL.length;
-				for (j = 0; j < len; j++) {
-					charDivs.unshift(charDivsRtoL[j]);
-				}
-			}
-			//console.debug(charDivs);
-			len = charDivs.length;
-			for (j = 0; j < len; j++) {
-				charDiv = charDivs[j];
-				regexResult = charDiv.className.match(/f(?:2|4)(\d+)/i);
-				//console.debug(regexResult);
-				if (regexResult) {
-					index = Number(regexResult[1]);
-					innerText += this.hvFontMap[index];
-				}
-			}
+			if (textBlocks[i].className.split(' ').indexOf('fl') === -1)
+				text.reverse();
+			innerText += text.join('');
 			innerText += " ";	//	Separator between text blocks
 		}
 		return innerText;
@@ -107,16 +105,39 @@ hv.locationMap = {
 
 hv.character = {
 	get healthRate() {
-		return hv.util.getCharacterGaugeRate(hv.elementCache.leftBar.querySelector('img[alt="health"]'));
+		var bar = util.document.body.querySelector('#dvbh img');
+		if (bar) {
+			return hv.util.getGaugeRate(bar, 414);
+		}
+		return hv.util.getGaugeRate(util.document.body.querySelector('#vbh img'), 496);
 	},
 	get magicRate() {
-		return hv.util.getCharacterGaugeRate(hv.elementCache.leftBar.querySelector('img[alt="magic"]'));
+		var bar = util.document.body.querySelector('#dvbm img');
+		if (bar) {
+			return hv.util.getGaugeRate(bar, 414);
+		}
+		return hv.util.getGaugeRate(util.document.body.querySelector('#vbm img'), 207);
 	},
 	get spiritRate() {
-		return hv.util.getCharacterGaugeRate(hv.elementCache.leftBar.querySelector('img[alt="spirit"]'));
+		var bar = util.document.body.querySelector('#dvbs img');
+		if (bar) {
+			return hv.util.getGaugeRate(bar, 414);
+		}
+		return hv.util.getGaugeRate(util.document.body.querySelector('#vbs img'), 207);
 	},
 	get overchargeRate() {
-		return hv.util.getCharacterGaugeRate(hv.elementCache.leftBar.querySelector('img[alt="overcharge"]'));
+		var bar = util.document.body.querySelector('#dvbc img');
+		if (bar) {
+			return hv.util.getGaugeRate(bar, 414);
+		}
+		bar = util.document.body.querySelector('#vcp');
+		if (!bar) {
+			return 0;
+		}
+		var numPips = bar.children[0].children.length;
+		if (numPips && bar.children[0].children[numPips - 1].id == 'vcr')
+			numPips -= 0.5;
+		return numPips / 10;
 	},
 	get healthPercent() {
 		return hv.util.percent(this.healthRate);
@@ -140,35 +161,29 @@ hv.elementCache = {
 		}
 		return this._popup;
 	},
-	_stuffBox: null,
-	get stuffBox() {
-		if (!this._stuffBox) {
-			this._stuffBox = util.document.body.querySelector('div.stuffbox');
+	_stamina_readout: null,
+	get stamina_readout() {
+		if (!this._stamina_readout) {
+			this._stamina_readout = util.document.body.querySelector('#stamina_readout');
 		}
-		return this._stuffBox;
+		return this._stamina_readout;
 	},
-	_leftBar: null,
-	get leftBar() {
-		if (!this._leftBar) {
-			this._leftBar = this.stuffBox.children[0];
+	_level_readout: null,
+	get level_readout() {
+		if (!this._level_readout) {
+			this._level_readout = util.document.body.querySelector('#level_readout');
 		}
-		return this._leftBar;
-	},
-	_infoTables: null,
-	get infoTables() {
-		if (!this._infoTables) {
-			this._infoTables = this.leftBar.querySelectorAll('table.cit');
-		}
-		return this._infoTables;
+		return this._level_readout;
 	},
 };
 
 hv.initialize = function () {
-	this.util.isUsingHVFontEngine = util.innerText(hv.elementCache.infoTables[0]).indexOf("Stamina") === -1;  // -hw-
+	//this.util.isUsingHVFontEngine = util.innerText(hv.elementCache.stamina_readout).indexOf("Stamina") === -1; // .stamina_readout is null in battle mode
+	this.util.isUsingHVFontEngine = (util.document.body.querySelector('div.fl, div.fr') !== null);
 	var settings = {
 		isUsingHVFontEngine: this.util.isUsingHVFontEngine,
 		get difficulty() {
-			var regexResult = hv.util.innerText(hv.elementCache.infoTables[1]).match(/(Normal|Hard|Nightmare|Hell|Nintendo|Battletoads|IWBTH|PFUDOR)/i);
+			var regexResult = hv.util.innerText(hv.elementCache.level_readout).match(/(Normal|Hard|Nightmare|Hell|Nintendo|Battletoads|IWBTH|PFUDOR)/i);
 			if (regexResult) {
 				return regexResult[1].toUpperCase();
 			} else {
@@ -177,7 +192,7 @@ hv.initialize = function () {
 		},
 	};
 
-	var battleLog = util.document.body.querySelector('#togpane_log');
+	var battleLog = util.document.body.querySelector('#pane_log');
 	var battle = {
 		isActive: !!battleLog,
 		elementCache: null,
@@ -194,12 +209,12 @@ hv.initialize = function () {
 			if (!this.isRoundFinished) {
 				return false;
 			} else {
-				if (!this.elementCache.dialogButton) {
-					// Hourly Encounter
+				if (document.location.search.startsWith("?s=Battle&ss=ba")) {
+					// Random Encounter
 					return true;
 				} else {
 					// The others
-					var onclick = this.elementCache.dialogButton.getAttribute("onclick");
+					var onclick = this.elementCache.dialog.getAttribute("onclick");
 					return onclick.indexOf("battle.battle_continue") === -1;
 				}
 			}
@@ -212,11 +227,11 @@ hv.initialize = function () {
 			_quickcastBar: null,
 			_monsterPane: null,
 			_dialog: null,
-			_dialogButton: null,
 			_characterEffectIcons: null,
 			_monsters: null,
 			_monsterEffectIcons: null,
 			_monsterGauges: null,
+			_rightPane: null,
 			get mainPane() {
 				if (!this._mainPane) {
 					this._mainPane = util.document.body.querySelector('#mainpane');
@@ -231,25 +246,19 @@ hv.initialize = function () {
 			},
 			get monsterPane() {
 				if (!this._monsterPane) {
-					this._monsterPane = util.document.body.querySelector('#monsterpane');
+					this._monsterPane = util.document.body.querySelector('#pane_monster');
 				}
 				return this._monsterPane;
 			},
 			get dialog() {
 				if (!this._dialog) {
-					this._dialog = util.document.body.querySelector('div.btcp');
+					this._dialog = util.document.body.querySelector('div#btcp');
 				}
 				return this._dialog;
 			},
-			get dialogButton() {
-				if (!this._dialogButton) {
-					this._dialogButton = util.document.body.querySelector('#ckey_continue');
-				}
-				return this._dialogButton;
-			},
 			get characterEffectIcons() {
 				if (!this._characterEffectIcons) {
-					this._characterEffectIcons = this.mainPane.querySelectorAll('div.btt > div.bte > img[onmouseover^="battle.set_infopane_effect"]');
+					this._characterEffectIcons = this.mainPane.querySelector('#pane_effects').children;
 				}
 				return this._characterEffectIcons;
 			},
@@ -267,9 +276,21 @@ hv.initialize = function () {
 			},
 			get monsterGauges() {
 				if (!this._monsterGauges) {
-					this._monsterGauges = this.monsterPane.querySelectorAll('div.btm1 > div.btm4 > div.btm5 > div.chbd > img.chb2');
+					this._monsterGauges = this.monsterPane.querySelectorAll('div.btm1 > div.btm4 > div.btm5 > div.chbd > img');
 				}
 				return this._monsterGauges;
+			},
+			get rightPane() {
+				if (!this._rightPane) {
+					this._rightPane = util.document.body.querySelector('#battle_right');
+				}
+				return this._rightPane;
+			},
+			resetAfterUpdate: function() {
+				this._characterEffectIcons = null;
+				this._monsters = null;
+				this._monsterEffectIcons = null;
+				this._monsterGauges = null;
 			},
 		};
 	}

@@ -1065,13 +1065,9 @@ function initSettingsPane() {
 	// General
 	if (hvStat.settings.isChangePageTitle) $("input[name=isChangePageTitle]").prop("checked", true);
 	$("input[name=customPageTitle]").attr("value", hvStat.settings.customPageTitle);
-	if (hvStat.settings.doesHideLogo) $("input[name=doesHideLogo]").prop("checked", true);
 	if (hvStat.settings.isShowEquippedSet) $("input[name=isShowEquippedSet]").prop("checked", true);
 	if (hvStat.settings.isShowSidebarProfs) $("input[name=isShowSidebarProfs]").prop("checked", true);
 	if (hvStat.settings.isStartAlert) $("input[name=isStartAlert]").prop("checked", true);
-	$("input[name=StartAlertHP]").attr("value", hvStat.settings.StartAlertHP);
-	$("input[name=StartAlertMP]").attr("value", hvStat.settings.StartAlertMP);
-	$("input[name=StartAlertSP]").attr("value", hvStat.settings.StartAlertSP);
 	var diffsel = "diff" + String(hvStat.settings.StartAlertDifficulty);
 	$("#" + diffsel).prop("selected", true);
 	if (hvStat.settings.isShowTags[0]) $("input[name=isShowTags0]").prop("checked", true);
@@ -1276,13 +1272,9 @@ function initSettingsPane() {
 	// General
 	$("input[name=isChangePageTitle]").click(saveSettings);
 	$("input[name=customPageTitle]").change(saveSettings);
-	$("input[name=doesHideLogo]").click(saveSettings);
 	$("input[name=isShowEquippedSet]").click(saveSettings);
-	$("input[name=isShowSidebarProfs]").click(reminderAndSaveSettings);
+	$("input[name=isShowSidebarProfs]").click(saveSettings);
 	$("input[name=isStartAlert]").click(saveSettings);
-	$("input[name=StartAlertHP]").change(saveSettings);
-	$("input[name=StartAlertMP]").change(saveSettings);
-	$("input[name=StartAlertSP]").change(saveSettings);
 	$("select[id=StartAlertDifficulty]").change(saveSettings);
 	$("input[name^=isShowTags]").click(saveSettings);
 
@@ -1386,8 +1378,8 @@ function initSettingsPane() {
 
 	// Monster Information
 	// - Monster Database
-	$("input[name=isRememberScan]").click(reminderAndSaveSettings);
-	$("input[name=isRememberSkillsTypes]").click(reminderAndSaveSettings);
+	$("input[name=isRememberScan]").click(saveSettings);
+	$("input[name=isRememberSkillsTypes]").click(saveSettings);
 	// - Monster Display
 	$("input[name=doesScaleMonsterGauges]").click(saveSettings);
 	$("input[name=showMonsterHP]").click(saveSettings);
@@ -1433,13 +1425,9 @@ function saveSettings() {
 	// General
 	hvStat.settings.isChangePageTitle = $("input[name=isChangePageTitle]").get(0).checked;
 	hvStat.settings.customPageTitle = $("input[name=customPageTitle]").get(0).value;
-	hvStat.settings.doesHideLogo = $("input[name=doesHideLogo]").get(0).checked;
 	hvStat.settings.isShowEquippedSet = $("input[name=isShowEquippedSet]").get(0).checked;
 	hvStat.settings.isShowSidebarProfs = $("input[name=isShowSidebarProfs]").get(0).checked;
 	hvStat.settings.isStartAlert = $("input[name=isStartAlert]").get(0).checked;
-	hvStat.settings.StartAlertHP = $("input[name=StartAlertHP]").get(0).value;
-	hvStat.settings.StartAlertMP = $("input[name=StartAlertMP]").get(0).value;
-	hvStat.settings.StartAlertSP = $("input[name=StartAlertSP]").get(0).value;
 	hvStat.settings.StartAlertDifficulty = $("select[id=StartAlertDifficulty]").get(0).value;
 	hvStat.settings.isShowTags[0] = $("input[name=isShowTags0]").get(0).checked;
 	hvStat.settings.isShowTags[1] = $("input[name=isShowTags1]").get(0).checked;
@@ -1636,12 +1624,6 @@ function saveSettings() {
 	hvStat.settings.isMonsterPopupPlacement = $("input[name=isMonsterPopupPlacement]").get(0).checked;
 
 	hvStat.storage.settings.save();
-}
-function reminderAndSaveSettings() {
-	if (!hvStat.characterStatus.areProficienciesCaptured && $("input[name=isShowSidebarProfs]").get(0).checked) {
-		alert('Please visit the Character Stats page at least once\nwith either the "Use Downloable Fonts" or "Custom\nLocal Font" setting enabled, to allow STAT to record\nyour current proficiencies. STAT cannot record this\ndata while HentaiVerse Font Engine is enabled.');
-	}
-	saveSettings();
 }
 function HVResetTracking() {
 	hvStat.storage.overview.reset();

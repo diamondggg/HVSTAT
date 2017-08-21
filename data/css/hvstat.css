@@ -6,8 +6,8 @@
 /* Icon */
 #hvstat-icon {
 	position: absolute;
-	top: 4px;
-	left: 1150px;
+	top: 2px;
+	right: 2px;
 	cursor: pointer;
 }
 #hvstat-icon span {

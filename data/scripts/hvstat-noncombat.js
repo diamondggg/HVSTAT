@@ -15,7 +15,7 @@ hvStat.noncombat.support = {
 			hvStat.characterStatus.difficulty.name = hvStat.constant.difficulty[hv.settings.difficulty].name;
 			hvStat.characterStatus.difficulty.index = difficulties.indexOf(difficulty);
 		}
-		elements = document.querySelectorAll('#setform img');
+		elements = document.querySelectorAll('#eqsl img');
 		var result;
 		for (var i = 0; i < elements.length; i++) {
 			result = /set(\d)_on/.exec(elements[i].getAttribute("src"));
@@ -27,22 +27,24 @@ hvStat.noncombat.support = {
 		hvStat.storage.characterStatus.save();
 	},
 	captureProficiencies: function () {
-		var proficiencyTable = document.getElementById("leftpane").children[2].querySelectorAll('div.fd4');
-        var prof = hvStat.characterStatus.proficiencies;
-        //Equipment Proficiencies
-		prof.oneHanded = Number(hv.util.innerText(proficiencyTable[2]));
-		prof.twoHanded = Number(hv.util.innerText(proficiencyTable[4]));
-		prof.dualWielding = Number(hv.util.innerText(proficiencyTable[6]));
-		prof.clothArmor = Number(hv.util.innerText(proficiencyTable[8]));
-		prof.lightArmor = Number(hv.util.innerText(proficiencyTable[10]));
-		prof.heavyArmor = Number(hv.util.innerText(proficiencyTable[12]));
-        //Magic Proficiencies
-        prof.staff = Number(hv.util.innerText(proficiencyTable[15]));
-		prof.elemental = Number(hv.util.innerText(proficiencyTable[17]));
-		prof.divine = Number(hv.util.innerText(proficiencyTable[19]));
-		prof.forbidden = Number(hv.util.innerText(proficiencyTable[21]));
-		prof.deprecating = Number(hv.util.innerText(proficiencyTable[23]));
-		prof.supportive = Number(hv.util.innerText(proficiencyTable[25]));
+		var proficiencyTable = document.getElementById("prof_outer");
+		var prof = hvStat.characterStatus.proficiencies;
+		//Equipment Proficiencies
+		var equipProf = proficiencyTable.children[0].children[1].children[0].children;
+		prof.oneHanded = Number(hv.util.innerText(equipProf[0].children[1]));
+		prof.twoHanded = Number(hv.util.innerText(equipProf[1].children[1]));
+		prof.dualWielding = Number(hv.util.innerText(equipProf[2].children[1]));
+		prof.clothArmor = Number(hv.util.innerText(equipProf[3].children[1]));
+		prof.lightArmor = Number(hv.util.innerText(equipProf[4].children[1]));
+		prof.heavyArmor = Number(hv.util.innerText(equipProf[5].children[1]));
+		//Magic Proficiencies
+		var magicProf = proficiencyTable.children[1].children[1].children[0].children;
+		prof.staff = Number(hv.util.innerText(magicProf[0].children[1]));
+		prof.elemental = Number(hv.util.innerText(magicProf[1].children[1]));
+		prof.divine = Number(hv.util.innerText(magicProf[2].children[1]));
+		prof.forbidden = Number(hv.util.innerText(magicProf[3].children[1]));
+		prof.deprecating = Number(hv.util.innerText(magicProf[4].children[1]));
+		prof.supportive = Number(hv.util.innerText(magicProf[5].children[1]));
 		hvStat.characterStatus.areProficienciesCaptured = true;
 		hvStat.storage.characterStatus.save();
 	},
@@ -75,24 +77,15 @@ hvStat.noncombat.support = {
 		hvStat.storage.shrine.save();
 	},
 	confirmBeforeBattle: function () {
+		if (hvStat.settings.StartAlertDifficulty >= hvStat.characterStatus.difficulty.index) {
+			return;
+		}
 		var message = "Are you sure you want to start this challenge on " +
 			hvStat.characterStatus.difficulty.name +
 			' difficulty, with set number: ' +
 			hvStat.characterStatus.equippedSet + '?\n';
-		if (hvStat.settings.StartAlertHP > hv.character.healthPercent) {
-			message += '\n - HP is only '+ hv.character.healthPercent + '%';
-		}
-		if (hvStat.settings.StartAlertMP > hv.character.magicPercent) {
-			message += '\n - MP is only '+ hv.character.magicPercent + '%';
-		}
-		if (hvStat.settings.StartAlertSP > hv.character.spiritPercent) {
-			message += '\n - SP is only '+ hv.character.spiritPercent + '%';
-		}
-		if (hvStat.settings.StartAlertDifficulty < hvStat.characterStatus.difficulty.index) {
-			message += '\n - Difficulty is '+ hvStat.characterStatus.difficulty.name;
-		}
 		var modifier = function(message) {
-			var elements = document.querySelectorAll('#mainpane img[onclick*="arenaform"]');
+			var elements = document.querySelectorAll('#mainpane img[onclick*="init_battle"]');
 			var i, element;
 			var makeNewOnClick = function(oldOnClick, message) {
 				return function(event) {

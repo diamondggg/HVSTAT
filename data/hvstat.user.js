@@ -70,9 +70,6 @@ var hvStat = {
 	addStyle: function () {
 		if (!this.isStyleAdded) {
 			browser.extension.style.addFromResource("css/", "hvstat.css", this.imageResources);
-			if (hvStat.settings.doesHideLogo) {
-				browser.extension.style.add("img.cw{visibility:hidden;}");
-			}
 			this.isStyleAdded = true;
 		}
 	},
@@ -482,13 +479,13 @@ hvStat.storage.initialValue = {
 		// General
 		isChangePageTitle: false,
 		customPageTitle: "HV",
-		doesHideLogo: false,
+		doesHideLogo: false, // legacy, used before HV 0.85
 		isShowEquippedSet: false,
 		isShowSidebarProfs: false,
 		isStartAlert: false,
-		StartAlertHP: 95,
-		StartAlertMP: 95,
-		StartAlertSP: 95,
+		StartAlertHP: 95, // legacy, used before HV 0.85
+		StartAlertMP: 95, // legacy, used before HV 0.85
+		StartAlertSP: 95, // legacy, used before HV 0.85
 		StartAlertDifficulty: 2,
 		isShowTags: [false, false, false, false, false, false],	// 0-equipment page, 1-shop, 2-itemworld, 3-moogle, 4-forge, 5-inventory
 
@@ -1246,7 +1243,7 @@ hvStat.gadget.wrenchIcon = {
 		if (this.initialized) {
 			return;
 		}
-		var stuffBox = hv.elementCache.stuffBox;
+		var parent = util.document.body.querySelector('#csp');
 		var icon = document.createElement("div");
 		icon.id = "hvstat-icon";
 		icon.className = "ui-state-default ui-corner-all";
@@ -1254,7 +1251,7 @@ hvStat.gadget.wrenchIcon = {
 		icon.addEventListener("click", this.onclick);
 		icon.addEventListener("mouseover", this.onmouseover);
 		icon.addEventListener("mouseout", this.onmouseout);
-		stuffBox.insertBefore(icon, null);
+		parent.insertBefore(icon, null);
 		this.initialized = true;
 	},
 	onclick: function (event) {
@@ -1358,7 +1355,7 @@ hvStat.gadget.inventoryWarningIcon = {
 		if (this.initialized) {
 			return;
 		}
-		var stuffBox = hv.elementCache.stuffBox;
+		var parent = util.document.body.querySelector('#csp');
 		var icon = document.createElement("div");
 		icon.id = "hvstat-inventory-warning-icon";
 		icon.className = "ui-state-error ui-corner-all";
@@ -1372,7 +1369,7 @@ hvStat.gadget.inventoryWarningIcon = {
 				this.initialized = false;
 			}
 		});
-		stuffBox.insertBefore(icon, null);
+		parent.insertBefore(icon, null);
 		this.initialized = true;
 	},
 };
@@ -2224,8 +2221,8 @@ hvStat.battle = {
 	constant: {
 		rInfoPaneParameters: /battle\.set_infopane_(?:spell|skill|item|effect)\('((?:[^'\\]|\\.)*)'\s*,\s*'(?:[^'\\]|\\.)*'\s*,\s*(.+)\)/,
 	},
-	initialize: function () {
-		hvStat.battle.enhancement.initialize();
+	initialize: function (initialPageLoad) {
+		hvStat.battle.enhancement.initialize(initialPageLoad);
 		hvStat.battle.monster.initialize();
 		hvStat.battle.eventLog.initialize();
 	},
@@ -2236,7 +2233,7 @@ hvStat.battle = {
 					dialogButton.click();
 					return 0;
 				}, hvStat.settings.autoAdvanceBattleRoundDelay);
-			})(hv.battle.elementCache.dialogButton);
+			})(hv.battle.elementCache.dialog);
 		}
 	},
 };
@@ -2272,53 +2269,96 @@ hvStat.battle.eventLog = {
 		this.buildMessageTypes();
 	},
 	processEvents: function () {
-		var currentTurnEvents = new hvStat.battle.eventLog.TurnEvents();
-		var turnMin;
-		if (currentTurnEvents.turnNumber === hvStat.roundContext.lastTurn) {
-			//We have no unprocessed events, so we do nothing
-			return;
-		} else if (currentTurnEvents.turnNumber < hvStat.roundContext.lastTurn) {
-			//We're in a new round, so start from the beginning
-			turnMin = 0;
-		} else {
-			//Start from where we left off
-			turnMin = hvStat.roundContext.lastTurn + 1;
-		}
-		var turnMax = currentTurnEvents.turnNumber;
-
-		for (var i = turnMin; i <= turnMax; i++) {
-			var turnEvents;
-			if (i < currentTurnEvents.turnNumber) {
-				turnEvents = new hvStat.battle.eventLog.TurnEvents(i);
-			} else {
-				turnEvents = currentTurnEvents;
+		var messages = [];
+		var allEvents = hv.battle.elementCache.battleLog.children[0].children[0].children;
+		var foundSeparator = false;
+		for (var i = 0; i < allEvents.length; i++) {
+			var messageElement = allEvents[i].children[0];
+			if (messageElement.className.indexOf("tls") !== -1) { // separator between turns
+				foundSeparator = true;
+				break;
 			}
-			turnEvents.process();
-			if (i === 0) {
-				if (hvStat.settings.isShowRoundReminder &&
-						hvStat.roundContext.maxRound >= hvStat.settings.reminderMinRounds &&
-						hvStat.roundContext.currRound === hvStat.roundContext.maxRound - hvStat.settings.reminderBeforeEnd) {
-					if (hvStat.settings.reminderBeforeEnd === 0) {
-						hvStat.battle.warningSystem.enqueueAlert("This is final round");
-					} else {
-						hvStat.battle.warningSystem.enqueueAlert("The final round is approaching.");
+			var text = util.innerText(messageElement);
+			var innerHTML = messageElement.innerHTML;
+			var message = new hvStat.battle.eventLog.Message(text, innerHTML);
+			messages.push(message);
+		}
+		if (!messages.length) {
+			return;
+		}
+		messages.reverse();
+		var isFirstInRound = (messages[0].messageType === hvStat.battle.eventLog.messageTypes["HOURLY_ENCOUNTER_INITIALIZATION"] ||
+			messages[0].messageType === hvStat.battle.eventLog.messageTypes["ARENA_INITIALIZATION"] ||
+			messages[0].messageType === hvStat.battle.eventLog.messageTypes["ITEM_WORLD_INITIALIZATION"] ||
+			messages[0].messageType === hvStat.battle.eventLog.messageTypes["GRINDFEST_INITIALIZATION"]);
+		if (!foundSeparator && !isFirstInRound) {
+			// Assume that the first turn is always a fresh page load
+			// and all subsequent turns are always loaded via XHR.
+			// Page reload gives the copy of the last turn in the log,
+			// so if we are here, the page was reloaded and
+			// we have (probably) already processed the last turn.
+			return;
+		}
+		// Set a related message for each
+		for (var i = 0; i < messages.length; i++) {
+			var message = messages[i];
+			var messageType = message.messageType;
+			if (messageType && Array.isArray(messageType.relatedMessageTypeNames)) {
+				var relatedMessageTypes = [];
+				for (var j = 0; j < messageType.relatedMessageTypeNames.length; j++) {
+					var messageTypeName = messageType.relatedMessageTypeNames[j];
+					relatedMessageTypes[j] = hvStat.battle.eventLog.messageTypes[messageTypeName];
+				}
+				for (j = i - 1; j >= 0; j--) {
+					var prevMessage = messages[j];
+					var prevMessageType = prevMessage.messageType;
+					if (relatedMessageTypes.indexOf(prevMessageType) >= 0) {
+						message.relatedMessage = prevMessage;
+						break;
 					}
 				}
 			}
-			var meleeHitCount = turnEvents.countOf("MELEE_HIT");
-			if (meleeHitCount >= 2) {
-				hvStat.roundContext.aDomino[0]++;
-				hvStat.roundContext.aDomino[1] += meleeHitCount;
-				hvStat.roundContext.aDomino[meleeHitCount]++;
-			}
-			var counterCount = turnEvents.countOf("COUNTER");
-			if (counterCount >= 1) {
-				hvStat.roundContext.aCounters[counterCount]++;
+		}
+		for (var i = 0; i < messages.length; i++) {
+			messages[i].evaluate();
+		}
+		if (isFirstInRound) {
+			if (hvStat.settings.isShowRoundReminder &&
+					hvStat.roundContext.maxRound >= hvStat.settings.reminderMinRounds &&
+					hvStat.roundContext.currRound === hvStat.roundContext.maxRound - hvStat.settings.reminderBeforeEnd) {
+				if (hvStat.settings.reminderBeforeEnd === 0) {
+					hvStat.battle.warningSystem.enqueueAlert("This is final round");
+				} else {
+					hvStat.battle.warningSystem.enqueueAlert("The final round is approaching.");
+				}
 			}
 		}
+		var meleeHitCount = this.calcEventsCount(messages, "MELEE_HIT");
+		if (meleeHitCount >= 2) {
+			hvStat.roundContext.aDomino[0]++;
+			hvStat.roundContext.aDomino[1] += meleeHitCount;
+			hvStat.roundContext.aDomino[meleeHitCount]++;
+		}
+		var counterCount = this.calcEventsCount(messages, "COUNTER");
+		if (counterCount >= 1) {
+			hvStat.roundContext.aCounters[counterCount]++;
+		}
 
-		hvStat.roundContext.lastTurn = currentTurnEvents.lastTurnNumber;
+		hvStat.roundContext.lastTurn = -1;
 		hvStat.storage.roundContext.save();
+	},
+	calcEventsCount: function (messages, messageTypeName) {
+		var count = 0;
+		var messageType = hvStat.battle.eventLog.messageTypes[messageTypeName];
+		if (!messageType) {
+			return 0;
+		}
+		for (var i = 0; i < messages.length; i++) {
+			if (messages[i].messageType === messageType) {
+				count++;
+			}
+		}
+		return count;
 	},
 };
 
@@ -2693,12 +2733,12 @@ hvStat.battle.eventLog.messageTypeParams = {
 		},
 	},*/
 	PROFICIENCY_GAIN: {
-		regex: /^You gain 0\.0(\d) points of (.+?) proficiency\.$/,
+		regex: /^You gain (0\.\d+) points of (.+?) proficiency\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
 		evaluationFn: function (message) {
 			if (hvStat.settings.isShowSidebarProfs || hvStat.settings.isTrackStats) {
-				var p = message.regexResult[1] / 100;
+				var p = Number(message.regexResult[1]);
 				switch (message.regexResult[2]) {
 				case "one-handed weapon":
 					hvStat.characterStatus.proficiencies.oneHanded += p;
@@ -3002,7 +3042,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 		},
 	},
 	SCAN: {
-		regex: /^Scanning (.*)\.\.\.\s+HP: [^\s]+\/([^\s]+)\s+MP: [^\s]+\/[^\s]+(?:\s+SP: [^\s]+\/[^\s]+)? Monster Class: (.+?)(?:, Power Level (\d+))? Monster Trainer:(?: (.+))? Melee Attack: (.+) Fire: ([\-\+]?\d+)% Cold: ([\-\+]?\d+)% Elec: ([\-\+]?\d+)% Wind: ([\-\+]?\d+)% Holy: ([\-\+]?\d+)% Dark: ([\-\+]?\d+)% Crushing: ([\-\+]?\d+)% Slashing: ([\-\+]?\d+)% Piercing: ([\-\+]?\d+)%/,
+		regex: /^Scanning (.*)\.\.\.\s+HP: [^\s]+ ?\/ ?([^\s]+)\s+MP: [^\s]+%(?:\s+SP: [^\s]+%)?\s+Monster Class: (.+?)(?:, Power Level (\d+))? Monster Trainer:(?: (.+))? Melee Attack: (.+) Fire: ([\-\+]?\d+)% Cold: ([\-\+]?\d+)% Elec: ([\-\+]?\d+)% Wind: ([\-\+]?\d+)% Holy: ([\-\+]?\d+)% Dark: ([\-\+]?\d+)% Crushing: ([\-\+]?\d+)% Slashing: ([\-\+]?\d+)% Piercing: ([\-\+]?\d+)%/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
 		evaluationFn: function (message) {
@@ -3332,79 +3372,6 @@ hvStat.battle.eventLog.messageTypeParams = {
 	},
 };
 
-hvStat.battle.eventLog.TurnEvents = function (targetTurnNumber) {
-	this.turnNumber = -1;
-	this.lastTurnNumber = -1;
-	this.messages = [];
-
-	var turnNumberElements = hv.battle.elementCache.battleLog.querySelectorAll('td:first-child');
-	this.lastTurnNumber = Number(util.innerText(turnNumberElements[0]));
-	if (isNaN(parseFloat(targetTurnNumber))) {
-		targetTurnNumber = this.lastTurnNumber;
-	} else {
-		targetTurnNumber = Number(targetTurnNumber);
-	}
-	this.turnNumber = targetTurnNumber;
-
-	for (var i = 0; i < turnNumberElements.length; i++) {
-		var turnNumberElement = turnNumberElements[i];
-		var turnNumber = Number(util.innerText(turnNumberElement));
-		if (turnNumber === targetTurnNumber) {
-			var messageElement = turnNumberElement.nextSibling.nextSibling;
-			var text = util.innerText(messageElement);
-			var innerHTML = messageElement.innerHTML;
-			var message = new hvStat.battle.eventLog.Message(text, innerHTML);
-			this.messages.push(message);
-		}
-	}
-	this.messages.reverse();
-	this.initialize();
-};
-hvStat.battle.eventLog.TurnEvents.prototype = {
-	initialize: function () {
-		// Set a related message for each
-		for (var i = 0; i < this.messages.length; i++) {
-			var message = this.messages[i];
-			var messageType = message.messageType;
-			if (messageType && Array.isArray(messageType.relatedMessageTypeNames)) {
-				var relatedMessageTypes = [];
-				for (var j = 0; j < messageType.relatedMessageTypeNames.length; j++) {
-					var messageTypeName = messageType.relatedMessageTypeNames[j];
-					relatedMessageTypes[j] = hvStat.battle.eventLog.messageTypes[messageTypeName];
-				}
-				for (j = i - 1; j >= 0; j--) {
-					var prevMessage = this.messages[j];
-					var prevMessageType = prevMessage.messageType;
-					if (relatedMessageTypes.indexOf(prevMessageType) >= 0) {
-						message.relatedMessage = prevMessage;
-						break;
-					}
-				}
-			}
-		}
-	},
-	process: function () {
-		for (var i = 0; i < this.messages.length; i++) {
-			var message = this.messages[i];
-			message.evaluate();
-		}
-	},
-	countOf: function (messageTypeName) {
-		var count = 0;
-		var messageType = hvStat.battle.eventLog.messageTypes[messageTypeName];
-		if (!messageType) {
-			return 0;
-		}
-		for (var i = 0; i < this.messages.length; i++) {
-			var message = this.messages[i];
-			if (message.messageType === messageType) {
-				count++;
-			}
-		}
-		return count;
-	},
-};
-
 //------------------------------------
 // Battle - Command Management
 //------------------------------------
@@ -3414,9 +3381,9 @@ hvStat.battle.command = {
 		if (!this._commandMap) {
 			this._commandMap = {
 				"Attack":    new hvStat.battle.command.Command({ elementId: "ckey_attack", name: "Attack" }),
-				"Skillbook": new hvStat.battle.command.Command({ elementId: "ckey_magic",  name: "Skillbook", menuElementIds: ["togpane_magico", "togpane_magict"] }),
+				"Skillbook": new hvStat.battle.command.Command({ elementId: "ckey_skill",  name: "Skillbook", menuElementIds: ["pane_skill", "pane_magic"] }),
 				"Spirit":    new hvStat.battle.command.Command({ elementId: "ckey_spirit", name: "Spirit" }),
-				"Items":     new hvStat.battle.command.Command({ elementId: "ckey_items",  name: "Items",     menuElementIds: ["togpane_item"] }),
+				"Items":     new hvStat.battle.command.Command({ elementId: "ckey_items",  name: "Items",     menuElementIds: ["pane_item"] }),
 				"Defend":    new hvStat.battle.command.Command({ elementId: "ckey_defend", name: "Defend" }),
 				"Focus":     new hvStat.battle.command.Command({ elementId: "ckey_focus",  name: "Focus" })
 			};
@@ -3662,7 +3629,7 @@ hvStat.battle.command.Command.prototype = {
 // Battle - Enhancements
 //------------------------------------
 hvStat.battle.enhancement = {
-	initialize: function () {
+	initialize: function (initialPageLoad) {
 		if (hvStat.settings.isShowSelfDuration) {
 			this.effectDurationBadge.showForCharacter();
 		}
@@ -3676,7 +3643,9 @@ hvStat.battle.enhancement = {
 			this.quickcast.highlight();
 		}
 		if (hvStat.settings.isShowHighlight) {
-			this.log.setHighlightStyle();
+			if (initialPageLoad) {
+				this.log.setHighlightStyle();
+			}
 			this.log.highlight();
 		}
 		if (hvStat.settings.isShowDivider) {
@@ -3907,17 +3876,10 @@ hvStat.battle.enhancement.log = {
 	},
 	showDivider: function () {
 		// Adds a divider between Battle Log rounds.
-		var logRows = hv.battle.elementCache.battleLog.getElementsByTagName('tr'),
-			i = logRows.length,
-			prevTurn = null,
-			currTurn = null;
-		while (i--) {
-			currTurn = logRows[i].firstChild.textContent;
-			if (!isNaN(parseFloat(currTurn))) {
-				if (prevTurn && prevTurn !== currTurn) {
-					logRows[i].lastChild.className += " hvstat-turn-divider";
-				}
-				prevTurn = currTurn;
+		var dividers = hv.battle.elementCache.battleLog.querySelectorAll('.tls');
+		for (var i = 0; i < dividers.length; i++) {
+			if (dividers[i].className.indexOf("hvstat-turn-divider") === -1) {
+				dividers[i].className += " hvstat-turn-divider";
 			}
 		}
 	},
@@ -3928,6 +3890,7 @@ hvStat.battle.enhancement.scanButton = {
 	createAll: function () {
 		hv.battle.elementCache.mainPane.style.overflow = "visible";
 		hv.battle.elementCache.monsterPane.style.overflow = "visible";
+		hv.battle.elementCache.rightPane.style.width = "450px";
 		var monsters = hv.battle.elementCache.monsters;
 		for (var i = 0; i < monsters.length; i++) {
 			if (monsters[i].innerHTML.indexOf("bardead") >= 0) {
@@ -4000,6 +3963,7 @@ hvStat.battle.enhancement.skillButton = {
 		}
 		hv.battle.elementCache.mainPane.style.overflow = "visible";
 		hv.battle.elementCache.monsterPane.style.overflow = "visible";
+		hv.battle.elementCache.rightPane.style.width = "450px";
 		var monsters = hv.battle.elementCache.monsters;
 		for (var i = 0; i < monsters.length; i++) {
 			if (monsters[i].innerHTML.indexOf("bardead") >= 0) {
@@ -5660,6 +5624,13 @@ hvStat.startup = {
 		hvStat.gadget.addStyle();
 
 		if (hv.battle.isActive) {
+			if (!this.domObserver) {
+				this.domObserver = new MutationObserver(function(mutations) {
+					hv.battle.elementCache.resetAfterUpdate();
+					hvStat.startup.battleUpdate(false);
+				});
+				this.domObserver.observe(document.getElementById('pane_log'), {childList:true, attributes:false, characterData:false, subtree:true});
+			}
 			hvStat.battle.command.reset();
 			if (hvStat.settings.adjustKeyEventHandling) {
 				var modifier = function() {
@@ -5683,72 +5654,17 @@ hvStat.startup = {
 				}
 				browser.extension.modifyEventHandler(modifier, "");
 			}
-			util.document.extractBody();
-			hvStat.gadget.initialize();
-			hvStat.battle.initialize();
-			if (hvStat.settings.delayRoundEndAlerts) {
-				hvStat.battle.warningSystem.restoreAlerts();
-			}
-			hvStat.battle.eventLog.processEvents();
-			if (hvStat.roundContext.currRound > 0 && hvStat.settings.isShowRoundCounter) {
-				hvStat.battle.enhancement.roundCounter.create();
-			}
-			if (hvStat.settings.doesScaleMonsterGauges) {
-				hvStat.battle.monster.setScale();
-			}
-			hvStat.battle.monster.showHealthAll();
-			if (hvStat.settings.doesScaleMonsterGauges) {
-				hvStat.battle.monster.scaleGaugesAll();
-			}
-			util.document.restoreBody();
-			if (!hvStat.database.loadingMonsterInfoFromDB) {
-				hvStat.battle.monster.showStatusAll();
-			}
-			if (hvStat.settings.isShowStatsPopup) {
-				hvStat.battle.monster.popup.initialize();
-			}
-			if (!hv.battle.isRoundFinished) {
-				// Show warnings
-				if (hvStat.settings.warnMode[hvStat.roundContext.battleType]) {
-					hvStat.battle.warningSystem.warnHealthStatus();
-				}
-				if (hvStat.settings.isMainEffectsAlertSelf) {
-					hvStat.battle.warningSystem.warnSelfEffectExpiring();
-				}
-				if (hvStat.settings.isMainEffectsAlertMonsters) {
-					hvStat.battle.warningSystem.warnMonsterEffectExpiring();
-				}
-			} else {
-				if (hvStat.settings.isShowEndStats) {
-					showBattleEndStats();
-				}
-				saveStats();
-				hvStat.storage.roundContext.remove();
-				if (hvStat.settings.autoAdvanceBattleRound) {
-					hvStat.battle.advanceRound();
-				}
-				//Don't stash alerts if the battle's over
-				if (hvStat.settings.delayRoundEndAlerts && !hv.battle.isFinished) {
-					hvStat.battle.warningSystem.stashAlerts();
-				}
-			}
-			if (!hv.battle.isFinished) {
-				hvStat.battle.warningSystem.alertAllFromQueue();
-			}
+			hvStat.startup.battleUpdate(true);
 			document.addEventListener("keydown", hvStat.battle.keyboard.documentKeydown);
 			if (hvStat.settings.adjustKeyEventHandling) {
 				document.dispatchEvent(new CustomEvent("hvstatcomplete"));
-			}
-			if (!hvStat.startup.reloaderWatched) {
-				window.addEventListener("Reloader_reloaded", hvStat.startup.phase2);
-				hvStat.startup.reloaderWatched = true;
 			}
 		} else if (hv.location === "riddle") {
 			hvStat.gadget.initialize();
 		} else {
 			hvStat.storage.roundContext.remove();
 			hvStat.storage.warningState.remove();
-            browser.extension.loadScript("scripts/", "hvstat-noncombat.js");
+			browser.extension.loadScript("scripts/", "hvstat-noncombat.js");
 			if (hvStat.settings.isStartAlert || hvStat.settings.isShowEquippedSet ||
 					hvStat.settings.isTrackItems || hvStat.settings.isTrackShrine) {
 				hvStat.noncombat.support.captureStatuses();
@@ -5828,7 +5744,64 @@ hvStat.startup = {
 			hvStat.gadget.initialize();
 		}
 	},
-	reloaderWatched: false,
+	battleUpdate: function (initialPageLoad) {
+		util.document.extractBody();
+		if (initialPageLoad) {
+			hvStat.gadget.initialize();
+		}
+		hvStat.battle.initialize(initialPageLoad);
+		if (hvStat.settings.delayRoundEndAlerts) {
+			hvStat.battle.warningSystem.restoreAlerts();
+		}
+		hvStat.battle.eventLog.processEvents();
+		if (hvStat.roundContext.currRound > 0 && hvStat.settings.isShowRoundCounter && initialPageLoad) {
+			hvStat.battle.enhancement.roundCounter.create();
+		}
+		if (hvStat.settings.doesScaleMonsterGauges) {
+			hvStat.battle.monster.setScale();
+		}
+		hvStat.battle.monster.showHealthAll();
+		if (hvStat.settings.doesScaleMonsterGauges) {
+			hvStat.battle.monster.scaleGaugesAll();
+		}
+		util.document.restoreBody();
+		if (!hvStat.database.loadingMonsterInfoFromDB) {
+			hvStat.battle.monster.showStatusAll();
+		}
+		if (hvStat.settings.isShowStatsPopup) {
+			hvStat.battle.monster.popup.initialize();
+		}
+		if (!hv.battle.isRoundFinished) {
+			// Show warnings
+			if (hvStat.settings.warnMode[hvStat.roundContext.battleType]) {
+				hvStat.battle.warningSystem.warnHealthStatus();
+			}
+			if (hvStat.settings.isMainEffectsAlertSelf) {
+				hvStat.battle.warningSystem.warnSelfEffectExpiring();
+			}
+			if (hvStat.settings.isMainEffectsAlertMonsters) {
+				hvStat.battle.warningSystem.warnMonsterEffectExpiring();
+			}
+		} else {
+			this.domObserver.disconnect(); // so that showBattleEndStats() will not trigger an infinite loop
+			if (hvStat.settings.isShowEndStats) {
+				showBattleEndStats();
+			}
+			saveStats();
+			hvStat.storage.roundContext.remove();
+			if (hvStat.settings.autoAdvanceBattleRound) {
+				hvStat.battle.advanceRound();
+			}
+			//Don't stash alerts if the battle's over
+			if (hvStat.settings.delayRoundEndAlerts && !hv.battle.isFinished) {
+				hvStat.battle.warningSystem.stashAlerts();
+			}
+		}
+		if (!hv.battle.isFinished) {
+			hvStat.battle.warningSystem.alertAllFromQueue();
+		}
+	},
+	domObserver: null,
 };
 
 hvStat.startup.phase1();
