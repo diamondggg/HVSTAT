@@ -158,6 +158,17 @@ hv.elementCache = {
 	get popup() {
 		if (!this._popup) {
 			this._popup = util.document.body.querySelector('#popup_box');
+			if (!this._popup) { // battle mode
+				this._popup = document.createElement('div');
+				this._popup.id = "popup_box";
+				this._popup.style.visibility = "hidden";
+				this._popup.style.position = "absolute";
+				this._popup.style.border = "1px solid #5C0D11";
+				this._popup.style.background = "#EDEBDF";
+				this._popup.style.opacity = "0.9";
+				this._popup.style.zIndex = 5;
+				util.document.body.appendChild(this._popup);
+			}
 		}
 		return this._popup;
 	},
@@ -276,7 +287,7 @@ hv.initialize = function () {
 			},
 			get monsterGauges() {
 				if (!this._monsterGauges) {
-					this._monsterGauges = this.monsterPane.querySelectorAll('div.btm1 > div.btm4 > div.btm5 > div.chbd > img');
+					this._monsterGauges = this.monsterPane.querySelectorAll('div.btm1 > div.btm4 > div.btm5 > div.chbd > img:first-child');
 				}
 				return this._monsterGauges;
 			},

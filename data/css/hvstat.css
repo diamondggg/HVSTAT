@@ -15,8 +15,8 @@
 }
 #hvstat-inventory-warning-icon {
 	position: absolute;
-	top: 4px;
-	left: 1125px;
+	top: 2px;
+	right: 30px;
 	cursor: pointer;
 }
 #hvstat-inventory-warning-icon span {
@@ -26,15 +26,28 @@
 /* Proficiency popup icon */
 #hvstat-proficiency-popup-icon {
 	position: absolute;
-	top: 671px;
 	border: 1px solid;
-	margin-left: 5px;
 	padding: 2px;
 	width: 132px;
 	font-size: 10pt;
 	font-weight: bold;
 	text-align: center;
 	cursor: default;
+}
+
+.hvstat-proficiency-popup-icon-stat {
+	left: 2px;
+	bottom: 2px;
+}
+
+.hvstat-proficiency-popup-icon-normal {
+	right: 2px;
+	bottom: 2px;
+}
+
+.hvstat-proficiency-popup-icon-battle {
+	right: 2px;
+	bottom: 15px;
 }
 
 /* Proficiency popup */
@@ -134,19 +147,19 @@
 }
 .hvstat-powerup-box-channeling {
 	cursor: pointer;
-	background-image: url(http://ehgt.org/v/e/channeling.png);
+	background-image: url(//ehgt.org/v/e/channeling.png);
 }
 .hvstat-powerup-box-health {
 	cursor: pointer;
-	background-image: url(http://ehgt.org/v/e/healthpot.png);
+	background-image: url(//ehgt.org/v/e/healthpot.png);
 }
 .hvstat-powerup-box-mana {
 	cursor: pointer;
-	background-image: url(http://ehgt.org/v/e/manapot.png);
+	background-image: url(//ehgt.org/v/e/manapot.png);
 }
 .hvstat-powerup-box-spirit {
 	cursor: pointer;
-	background-image: url(http://ehgt.org/v/e/spiritpot.png);
+	background-image: url(//ehgt.org/v/e/spiritpot.png);
 }
 
 /* Quickcast highlight */

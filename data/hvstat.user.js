@@ -1216,18 +1216,11 @@ hvStat.gadget = {
 		new browser.I("images/", "ui-icons_cd0a0a_256x240.png", "css/images/"),
 		new browser.I("images/", "animated-overlay.gif", "css/images/"),
 	],
-	isStyleAdded: false,
 	addStyle: function () {
-		if (!this.isStyleAdded) {
-			browser.extension.style.addFromResource("css/", "jquery-ui-1.11.4.custom.min.css", this.imageResources);
-			this.isStyleAdded = true;
-		}
+		browser.extension.style.addFromResource("css/", "jquery-ui-1.11.4.custom.min.css", this.imageResources);
 	},
 	initialize: function () {
-		if (hvStat.settings.isShowEquippedSet) {
-			hvStat.gadget.equippedSet.create();
-		}
-		if (hvStat.settings.isShowSidebarProfs) {
+		if (hvStat.settings.isShowEquippedSet || hvStat.settings.isShowSidebarProfs) {
 			hvStat.gadget.proficiencyPopupIcon.create();
 		}
 		if (hvStat.characterStatus.didReachInventoryLimit) {
@@ -1238,11 +1231,7 @@ hvStat.gadget = {
 };
 
 hvStat.gadget.wrenchIcon = {
-	initialized: false,
 	create: function () {
-		if (this.initialized) {
-			return;
-		}
 		var parent = util.document.body.querySelector('#csp');
 		var icon = document.createElement("div");
 		icon.id = "hvstat-icon";
@@ -1252,7 +1241,6 @@ hvStat.gadget.wrenchIcon = {
 		icon.addEventListener("mouseover", this.onmouseover);
 		icon.addEventListener("mouseout", this.onmouseout);
 		parent.insertBefore(icon, null);
-		this.initialized = true;
 	},
 	onclick: function (event) {
 		this.removeEventListener(event.type, arguments.callee);
@@ -1268,33 +1256,13 @@ hvStat.gadget.wrenchIcon = {
 	},
 };
 
-hvStat.gadget.equippedSet = {
-	initialized: false,
-	create: function () {
-		if (this.initialized) {
-			return;
-		}
-		var leftBar = hv.elementCache.leftBar;
-		var table = document.createElement("table");
-		table.className = "cit";
-		var tbody = table.appendChild(document.createElement("tbody"));
-		var tr = tbody.appendChild(document.createElement("tr"));
-		var td = tr.appendChild(document.createElement("td"));
-		var div0 = td.appendChild(document.createElement("div"));
-		div0.className = "fd4";
-		var div1 = div0.appendChild(document.createElement("div"));
-		div1.style.cssText = hv.elementCache.infoTables[0].children[0].children[0].children[0].children[0].children[0].style.cssText;
-		div1.textContent = "Equipped set: " + hvStat.characterStatus.equippedSet;
-		leftBar.insertBefore(table, null);
-		this.initialized = true;
-	},
-};
-
 hvStat.gadget.proficiencyPopupIcon = {
 	icon: null,
 	popup: null,
 	create: function () {
-		if (!hvStat.characterStatus.areProficienciesCaptured) {
+		this.showProfData = hvStat.settings.isShowSidebarProfs && hvStat.characterStatus.areProficienciesCaptured;
+		this.showEquippedSet = hvStat.settings.isShowEquippedSet && hvStat.characterStatus.equippedSet;
+		if (!this.showProfData && !this.showEquippedSet) {
 			return;
 		}
 		if (this.icon) {
@@ -1306,33 +1274,47 @@ hvStat.gadget.proficiencyPopupIcon = {
 		}
 		this.icon = document.createElement("div");
 		this.icon.id = "hvstat-proficiency-popup-icon";
-		this.icon.className = "ui-corner-all";
+		if (util.document.body.querySelector('#stats_inner')) {
+			this.icon.className = "ui-corner-all hvstat-proficiency-popup-icon-stat";
+		} else if (util.document.body.querySelector('#expholder')) {
+			this.icon.className = "ui-corner-all hvstat-proficiency-popup-icon-battle";
+		} else {
+			this.icon.className = "ui-corner-all hvstat-proficiency-popup-icon-normal";
+		}
 		this.icon.textContent = "Proficiency";
 		this.icon.addEventListener("mouseover", this.onmouseover);
 		this.icon.addEventListener("mouseout", this.onmouseout);
-		var leftBar = hv.elementCache.leftBar;
-		leftBar.parentNode.insertBefore(this.icon, leftBar.nextSibling);
+		var parent = util.document.body.querySelector('#csp');
+		parent.insertBefore(this.icon, null);
 	},
 	createPopup: function () {
 		this.popup = document.createElement("div");
 		this.popup.id = "hvstat-proficiency-popup";
-		this.popup.innerHTML = browser.extension.getResourceText("html/", "proficiency-table.html");
-		var tableData = this.popup.querySelectorAll('td');
-		var prof = hvStat.characterStatus.proficiencies;
-        //Equipment
-		tableData[ 0].textContent = prof.oneHanded.toFixed(2);
-		tableData[ 2].textContent = prof.twoHanded.toFixed(2);
-		tableData[ 4].textContent = prof.dualWielding.toFixed(2);
-		tableData[ 6].textContent = prof.clothArmor.toFixed(2);
-		tableData[ 8].textContent = prof.lightArmor.toFixed(2);
-		tableData[10].textContent = prof.heavyArmor.toFixed(2);
-        //Magic
-        tableData[ 1].textContent = prof.staff.toFixed(2);
-		tableData[ 3].textContent = prof.elemental.toFixed(2);
-		tableData[ 5].textContent = prof.divine.toFixed(2);
-		tableData[ 7].textContent = prof.forbidden.toFixed(2);
-		tableData[ 9].textContent = prof.deprecating.toFixed(2);
-		tableData[11].textContent = prof.supportive.toFixed(2);
+		if (this.showProfData) {
+			this.popup.innerHTML = browser.extension.getResourceText("html/", "proficiency-table.html");
+			var tableData = this.popup.querySelectorAll('td');
+			var prof = hvStat.characterStatus.proficiencies;
+			//Equipment
+			tableData[ 0].textContent = prof.oneHanded.toFixed(2);
+			tableData[ 2].textContent = prof.twoHanded.toFixed(2);
+			tableData[ 4].textContent = prof.dualWielding.toFixed(2);
+			tableData[ 6].textContent = prof.clothArmor.toFixed(2);
+			tableData[ 8].textContent = prof.lightArmor.toFixed(2);
+			tableData[10].textContent = prof.heavyArmor.toFixed(2);
+			//Magic
+			tableData[ 1].textContent = prof.staff.toFixed(2);
+			tableData[ 3].textContent = prof.elemental.toFixed(2);
+			tableData[ 5].textContent = prof.divine.toFixed(2);
+			tableData[ 7].textContent = prof.forbidden.toFixed(2);
+			tableData[ 9].textContent = prof.deprecating.toFixed(2);
+			tableData[11].textContent = prof.supportive.toFixed(2);
+		}
+		if (this.showEquippedSet) {
+			if (this.showProfData) {
+				this.popup.innerHTML += "<hr>";
+			}
+			this.popup.innerHTML += "Equipped set: " + hvStat.characterStatus.equippedSet;
+		}
 		this.icon.appendChild(this.popup);
 	},
 	onmouseover: function (event) {
@@ -1350,11 +1332,7 @@ hvStat.gadget.proficiencyPopupIcon = {
 };
 
 hvStat.gadget.inventoryWarningIcon = {
-	initialized: false,
 	create: function () {
-		if (this.initialized) {
-			return;
-		}
 		var parent = util.document.body.querySelector('#csp');
 		var icon = document.createElement("div");
 		icon.id = "hvstat-inventory-warning-icon";
@@ -1366,11 +1344,9 @@ hvStat.gadget.inventoryWarningIcon = {
 				hvStat.characterStatus.didReachInventoryLimit = false;
 				hvStat.storage.characterStatus.save();
 				this.parentNode.removeChild(this);
-				this.initialized = false;
 			}
 		});
 		parent.insertBefore(icon, null);
-		this.initialized = true;
 	},
 };
 
@@ -2224,7 +2200,9 @@ hvStat.battle = {
 	initialize: function (initialPageLoad) {
 		hvStat.battle.enhancement.initialize(initialPageLoad);
 		hvStat.battle.monster.initialize();
-		hvStat.battle.eventLog.initialize();
+		if (initialPageLoad) {
+			hvStat.battle.eventLog.initialize();
+		}
 	},
 	advanceRound: function () {
 		if (!hv.battle.isFinished && hv.battle.isRoundFinished) {
@@ -3482,10 +3460,7 @@ hvStat.battle.command.MenuItem = function (spec) {
 	this.element = spec && spec.element || null;
 	var onmouseover = String(this.element.getAttribute("onmouseover"));
 	var result = hvStat.battle.constant.rInfoPaneParameters.exec(onmouseover);
-	if (!result) {
-		return null;
-	}
-	this.name = result[1];
+	this.name = result && result[1] || "";
 	this.id = this.element && this.element.id || "";
 	this.boundKeys = [];
 	this.commandTarget = null;
@@ -3786,8 +3761,8 @@ hvStat.battle.enhancement.powerupBox = {
 	// Creates a shortcut to the powerup if one is available.
 	powerup: null,
 	create: function () {
-		var battleMenu = util.document.body.querySelector('.btp'),
-			powerBox = document.createElement("div");
+		var battleMenu = util.document.body.querySelector('#pane_effects');
+		var powerBox = document.createElement("div");
 		this.powerup = util.document.body.querySelector('#ikey_p');
 
 		powerBox.className = "hvstat-powerup-box";
@@ -3795,14 +3770,14 @@ hvStat.battle.enhancement.powerupBox = {
 			powerBox.className += " hvstat-powerup-box-none";
 			powerBox.textContent = "P";
 		} else {
-			var powerInfo = this.powerup.getAttribute("onmouseover");
-			if (powerInfo.indexOf('Health') > -1) {
+			var powerInfo = hv.util.innerText(this.powerup).toLowerCase();
+			if (powerInfo.indexOf('health') > -1) {
 				powerBox.className += " hvstat-powerup-box-health";
-			} else if (powerInfo.indexOf('Mana') > -1) {
+			} else if (powerInfo.indexOf('mana') > -1) {
 				powerBox.className += " hvstat-powerup-box-mana";
-			} else if (powerInfo.indexOf('Spirit') > -1) {
+			} else if (powerInfo.indexOf('spirit') > -1) {
 				powerBox.className += " hvstat-powerup-box-spirit";
-			} else if (powerInfo.indexOf('Mystic') > -1) {
+			} else if (powerInfo.indexOf('mystic') > -1) {
 				powerBox.className += " hvstat-powerup-box-channeling";
 			}
 			if (!hv.battle.isRoundFinished) {
@@ -3896,13 +3871,6 @@ hvStat.battle.enhancement.scanButton = {
 			if (monsters[i].innerHTML.indexOf("bardead") >= 0) {
 				continue;
 			}
-			var buttonExists = false;
-			for (var j = 0; j < monsters[i].children.length; j++) {
-				if (monsters[i].children[j].className.indexOf("hvstat-scan-button") >= 0)
-					buttonExists = true;
-			}
-			if (buttonExists)
-				continue;
 			var button = this.create(monsters[i]);
 			if (button) {
 				monsters[i].insertBefore(button, null);
@@ -3969,13 +3937,6 @@ hvStat.battle.enhancement.skillButton = {
 			if (monsters[i].innerHTML.indexOf("bardead") >= 0) {
 				continue;
 			}
-			var buttonExists = false;
-			for (var j = 0; j < monsters[i].children.length; j++) {
-				if (monsters[i].children[j].className.indexOf("hvstat-skill-button") >= 0)
-					buttonExists = true;
-			}
-			if (buttonExists)
-				continue;
 			for (var j = 0; j < skills.length; j++) {
 				var button = this.create(monsters[i], skills[j], j + 1);
 				if (button) {
@@ -4004,9 +3965,6 @@ hvStat.battle.enhancement.monsterLabel = {
 		var targets = hv.battle.elementCache.monsterPane.querySelectorAll('div.btm1 > div.btm2 > div > img');
 		for (var i = 0; i < targets.length; i++) {
 			var target = targets[i];
-			if (target.className.indexOf("hvstat-monster-number") >= 0) {
-				continue;
-			}
 			target.className += " hvstat-monster-number";
 			var parentNode = target.parentNode;
 			var div = document.createElement("div");
@@ -5112,7 +5070,7 @@ hvStat.battle.monster.Monster.prototype = {
 			} else if (this.healthPoints && that.maxHp) {
 				div.textContent = that.healthPoints.toFixed(0) + " / " + that.maxHp.toFixed(0);
 			}
-			this.gauges[0].parentNode.insertBefore(div, null);
+			this.gauges[0].parentNode.insertBefore(div, this.gauges[0].nextSibling);
 		}
 		if (hvStat.settings.showMonsterMP) {
 			div = document.createElement("div");
@@ -5121,7 +5079,7 @@ hvStat.battle.monster.Monster.prototype = {
 			}
 			div.className = "hvstat-monster-magic";
 			div.textContent = (that.magicPointRate * 100).toFixed(1) + "%";
-			this.gauges[1].parentNode.insertBefore(div, null);
+			this.gauges[1].parentNode.insertBefore(div, this.gauges[1].nextSibling);
 		}
 		if (hvStat.settings.showMonsterSP && this.hasSpiritPoint) {
 			div = document.createElement("div");
@@ -5130,7 +5088,7 @@ hvStat.battle.monster.Monster.prototype = {
 			}
 			div.className = "hvstat-monster-spirit";
 			div.textContent = (that.spiritPointRate * 100).toFixed(1) + "%";
-			this.gauges[2].parentNode.insertBefore(div, null);
+			this.gauges[2].parentNode.insertBefore(div, this.gauges[2].nextSibling);
 		}
 	},
 	takeDamage: function (damageAmount) {
@@ -5631,7 +5589,6 @@ hvStat.startup = {
 				});
 				this.domObserver.observe(document.getElementById('pane_log'), {childList:true, attributes:false, characterData:false, subtree:true});
 			}
-			hvStat.battle.command.reset();
 			if (hvStat.settings.adjustKeyEventHandling) {
 				var modifier = function() {
 					var onkeydown = null;
@@ -5745,6 +5702,7 @@ hvStat.startup = {
 		}
 	},
 	battleUpdate: function (initialPageLoad) {
+		hvStat.battle.command.reset();
 		util.document.extractBody();
 		if (initialPageLoad) {
 			hvStat.gadget.initialize();
