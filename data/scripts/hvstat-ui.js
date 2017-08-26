@@ -1076,6 +1076,7 @@ function initSettingsPane() {
 	if (hvStat.settings.isShowTags[3]) $("input[name=isShowTags3]").prop("checked", true);
 	if (hvStat.settings.isShowTags[4]) $("input[name=isShowTags4]").prop("checked", true);
 	if (hvStat.settings.isShowTags[5]) $("input[name=isShowTags5]").prop("checked", true);
+	if (hvStat.settings.warnIfHttp) $("input[name=warnIfHttp]").prop("checked", true);
 
 	// Keyboard
 	if (hvStat.settings.adjustKeyEventHandling) $("input[name=adjustKeyEventHandling]").prop("checked", true);
@@ -1277,6 +1278,7 @@ function initSettingsPane() {
 	$("input[name=isStartAlert]").click(saveSettings);
 	$("select[id=StartAlertDifficulty]").change(saveSettings);
 	$("input[name^=isShowTags]").click(saveSettings);
+	$("input[name=warnIfHttp]").click(saveSettings);
 
 	// Keyboard
 	$("input[name=adjustKeyEventHandling]").click(saveSettings);
@@ -1435,6 +1437,7 @@ function saveSettings() {
 	hvStat.settings.isShowTags[3] = $("input[name=isShowTags3]").get(0).checked;
 	hvStat.settings.isShowTags[4] = $("input[name=isShowTags4]").get(0).checked;
 	hvStat.settings.isShowTags[5] = $("input[name=isShowTags5]").get(0).checked;
+	hvStat.settings.warnIfHttp = $("input[name=warnIfHttp]").get(0).checked;
 
 	// Keyboard
 	hvStat.settings.adjustKeyEventHandling = $("input[name=adjustKeyEventHandling]").get(0).checked;

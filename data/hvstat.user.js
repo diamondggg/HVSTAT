@@ -488,6 +488,7 @@ hvStat.storage.initialValue = {
 		StartAlertSP: 95, // legacy, used before HV 0.85
 		StartAlertDifficulty: 2,
 		isShowTags: [false, false, false, false, false, false],	// 0-equipment page, 1-shop, 2-itemworld, 3-moogle, 4-forge, 5-inventory
+		warnIfHttp: true,
 
 		// Keyboard
 		adjustKeyEventHandling: false,
@@ -1225,6 +1226,8 @@ hvStat.gadget = {
 		}
 		if (hvStat.characterStatus.didReachInventoryLimit) {
 			hvStat.gadget.inventoryWarningIcon.create();
+		} else if (hvStat.settings.warnIfHttp !== false && document.location.protocol === "http:") {
+			hvStat.gadget.httpWarningIcon.create();
 		}
 		hvStat.gadget.wrenchIcon.create();
 	},
@@ -1345,6 +1348,23 @@ hvStat.gadget.inventoryWarningIcon = {
 				hvStat.storage.characterStatus.save();
 				this.parentNode.removeChild(this);
 			}
+		});
+		parent.insertBefore(icon, null);
+	},
+};
+
+hvStat.gadget.httpWarningIcon = {
+	create: function () {
+		var parent = util.document.body.querySelector('#csp');
+		var icon = document.createElement("div");
+		icon.id = "hvstat-inventory-warning-icon";
+		icon.className = "ui-state-error ui-corner-all";
+		icon.innerHTML = '<span class="ui-icon ui-icon-alert" title="Page loaded using HTTP."/>';
+		icon.addEventListener("click", function (event) {
+			alert("The current page is loaded using HTTP.\n" +
+				"Databases for HTTP and HTTPS are not synchronized.\n" +
+				"It is recommended to export all settings and history using Database tab in HVSTAT UI,\n" +
+				"import them to HTTPS version and use only HTTPS afterwards.");
 		});
 		parent.insertBefore(icon, null);
 	},

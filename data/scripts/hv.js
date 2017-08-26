@@ -298,6 +298,7 @@ hv.initialize = function () {
 				return this._rightPane;
 			},
 			resetAfterUpdate: function() {
+				this._quickcastBar = null;
 				this._characterEffectIcons = null;
 				this._monsters = null;
 				this._monsterEffectIcons = null;
@@ -318,7 +319,7 @@ hv.initialize = function () {
 				break;
 			}
 		}
-		if (!isLocationFound) {
+		if ((location == "arena" || location == "battle") || !isLocationFound) {
 			if (util.document.body.querySelector('#riddleform')) {
 				location = "riddle";
 			} else if (util.document.body.querySelector('#pattrform')) {

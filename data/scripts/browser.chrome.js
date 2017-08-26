@@ -21,15 +21,18 @@ browser.extension = {
 		eval.call(window, browser.extension.getResourceText(scriptPath, scriptName));
 	},
 	eventHandlerId: 0,
-	modifyEventHandler: function (modifier, param) {
-		// Chromium extensions have their own view of Element.onclick and similar,
-		// so inject script element into the page
+	runScriptInPageContext: function (script) {
 		var scriptElement = document.createElement("script");
 		scriptElement.type = "text/javascript";
 		var id = "hvstat-tempjs-" + this.eventHandlerId++;
 		scriptElement.id = id;
-		scriptElement.textContent = "(" + modifier.toString() + ")(" + JSON.stringify(param) + ");document.body.removeChild(document.getElementById('"+id+"'));";
+		scriptElement.textContent = script;
 		document.body.appendChild(scriptElement);
+	},
+	modifyEventHandler: function (modifier, param) {
+		// Chromium extensions have their own view of Element.onclick and similar,
+		// so inject script element into the page
+		runScriptInPageContext( "(" + modifier.toString() + ")(" + JSON.stringify(param) + ");document.body.removeChild(document.getElementById('"+id+"'));");
 	}
 };
 

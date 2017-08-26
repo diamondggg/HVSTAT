@@ -53,26 +53,27 @@ hvStat.noncombat.support = {
 		if (!messageBoxElement) {
 			return;
 		}
-		var messageElements = messageBoxElement.querySelectorAll('div.cmb6');
+		// .fc for HV standard "font", .fac for normal text in custom font
+		var messageElements = messageBoxElement.querySelectorAll('div.fc, div.fac');
 		var message0 = hv.util.innerText(messageElements[0]);
 		if (message0.match(/power/i)) {
 			hvStat.shrine.artifactsTraded++;
-			var message2 = hv.util.innerText(messageElements[2]);
-			if (message2.match(/Elixir/i)) {
+			var message1 = hv.util.innerText(messageElements[1]);
+			if (message1.match(/Elixir/i)) {
 				hvStat.shrine.artifactElixer++;
-			} else if (message2.match(/crystal/i)) {
+			} else if (message1.match(/crystal/i)) {
 				hvStat.shrine.artifactCrystal++;
-			} else if (message2.match(/increased/i)) {
+			} else if (message1.match(/increased/i)) {
 				hvStat.shrine.artifactStat++;
-			} else if (message2.match(/(\d) hath/i)) {
+			} else if (message1.match(/(\d) hath/i)) {
 				hvStat.shrine.artifactHath++;
 				hvStat.shrine.artifactHathTotal += Number(RegExp.$1);
-			} else if (message2.match(/energy drink/i)) {
+			} else if (message1.match(/energy drink/i)) {
 				hvStat.shrine.artifactItem++;
 			}
 		} else if (message0.match(/item/i)) {
-			var message3 = hv.util.innerText(messageElements[3]);
-			hvStat.shrine.trophyArray.push(hvStat.util.capitalizeEquipmentName(message3));
+			var message2 = hv.util.innerText(messageElements[2]);
+			hvStat.shrine.trophyArray.push(hvStat.util.capitalizeEquipmentName(message2));
 		}
 		hvStat.storage.shrine.save();
 	},
@@ -155,6 +156,19 @@ hvStat.noncombat.inventory = {};
 
 hvStat.noncombat.inventory.equipment = {
 	showTagInputFields: function (doClean) {
+		var dynjs_equip = null, dynjs_eqstore = null;
+		if (browser.isChrome) {
+			script = "if (typeof dynjs_equip !== 'undefined') {document.body.setAttribute('dynjs_equip', JSON.stringify(dynjs_equip));}";
+			script += "if (typeof dynjs_eqstore !== 'undefined') {document.body.setAttribute('dynjs_eqstore', JSON.stringify(dynjs_eqstore));}";
+			browser.extension.runScriptInPageContext(script);
+			dynjs_equip = JSON.parse(document.body.getAttribute('dynjs_equip'));
+			dynjs_eqstore = JSON.parse(document.body.getAttribute('dynjs_eqstore'));
+			document.body.removeAttribute('dynjs_equip');
+			document.body.removeAttribute('dynjs_eqstore');
+		} else {
+			dynjs_equip = unsafeWindow.dynjs_equip;
+			dynjs_eqstore = unsafeWindow.dynjs_eqstore;
+		}
 		var equipTagArrayTable = [
 			{id: hvStat.equipmentTags.OneHandedIDs,	value: hvStat.equipmentTags.OneHandedTAGs,	idClean: [], valueClean: []},
 			{id: hvStat.equipmentTags.TwoHandedIDs,	value: hvStat.equipmentTags.TwoHandedTAGs,	idClean: [], valueClean: []},
@@ -164,14 +178,20 @@ hvStat.noncombat.inventory.equipment = {
 			{id: hvStat.equipmentTags.LightIDs,		value: hvStat.equipmentTags.LightTAGs,		idClean: [], valueClean: []},
 			{id: hvStat.equipmentTags.HeavyIDs,		value: hvStat.equipmentTags.HeavyTAGs,		idClean: [], valueClean: []}
 		];
-		var elements = document.querySelectorAll('#inv_equip div.eqdp, #item_pane div.eqdp, #equip div.eqdp, #equip_pane div.eqdp');
+		var elements = document.querySelectorAll('#inv_equip div.eqp, #inv_eqstor div.eqp, #item_pane div.eqp, #equip div.eqp, #equip_pane div.eqp, #eqsb div.eqb');
 		Array.prototype.forEach.call(elements, function (element) {
-			var onmouseover = element.getAttribute("onmouseover");
-			var regexResult = onmouseover.match(/(One-handed Weapon|Two-handed Weapon|Staff|Shield|Cloth Armor|Light Armor|Heavy Armor)(?:\s*&nbsp;)*\s*Level/);
+			if (element.lastElementChild.id[0] != "e") {
+				return;
+			}
+			var id = parseInt(element.lastElementChild.id.slice(1), 10);
+			var source = (dynjs_eqstore && dynjs_eqstore[id]) ? dynjs_eqstore : dynjs_equip;
+			if (!source || !source[id]) {
+				return;
+			}
+			var regexResult = source[id].d.match(/(One-handed Weapon|Two-handed Weapon|Staff|Shield|Cloth Armor|Light Armor|Heavy Armor)(?:\s*&nbsp;)*\s*Level/);
 			if (!regexResult) {
 				return;
 			}
-			var id = parseInt(String(element.id), 10);
 			var equipTypeIdx;
 			switch (regexResult[1]) {
 			case "One-handed Weapon":
@@ -217,7 +237,7 @@ hvStat.noncombat.inventory.equipment = {
 					valueCleanArray.push(valueArray[index]);
 				}
 			}
-			element.parentNode.insertBefore(inputElement, null);
+			element.insertBefore(inputElement, element.lastElementChild);
 			inputElement.addEventListener("change", function (event) {
 				var target = event.target;
 				var tagId = Number(target.name.replace("tagid_", ""));
