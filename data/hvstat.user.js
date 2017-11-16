@@ -3067,7 +3067,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 		},
 	},
 	INVENTORY_LIMIT_WARNING: {
-		regex: /^Warning: Reached equipment inventory limit \(\d+\)\. Generated item instead\.$/,
+		regex: /^Warning: Reached equipment inventory limit\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
 		evaluationFn: function (message) {
