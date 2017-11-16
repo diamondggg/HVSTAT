@@ -61,15 +61,15 @@ window.IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 var hvStat = {
 	version: "5.7.0",
 	imageResources: [
-		new browser.I("images/", "channeling.png", "css/images/"),
-		new browser.I("images/", "healthpot.png", "css/images/"),
-		new browser.I("images/", "manapot.png", "css/images/"),
-		new browser.I("images/", "spiritpot.png", "css/images/"),
+		new browserAPI.I("images/", "channeling.png", "css/images/"),
+		new browserAPI.I("images/", "healthpot.png", "css/images/"),
+		new browserAPI.I("images/", "manapot.png", "css/images/"),
+		new browserAPI.I("images/", "spiritpot.png", "css/images/"),
 	],
 	isStyleAdded: false,
 	addStyle: function () {
 		if (!this.isStyleAdded) {
-			browser.extension.style.addFromResource("css/", "hvstat.css", this.imageResources);
+			browserAPI.extension.style.addFromResource("css/", "hvstat.css", this.imageResources);
 			this.isStyleAdded = true;
 		}
 	},
@@ -1212,13 +1212,13 @@ hvStat.versions.functions = {
 //------------------------------------
 hvStat.gadget = {
 	imageResources: [
-		new browser.I("images/", "ui-icons_2e83ff_256x240.png", "css/images/"),
-		new browser.I("images/", "ui-icons_5c0d11_256x240.png", "css/images/"),
-		new browser.I("images/", "ui-icons_cd0a0a_256x240.png", "css/images/"),
-		new browser.I("images/", "animated-overlay.gif", "css/images/"),
+		new browserAPI.I("images/", "ui-icons_2e83ff_256x240.png", "css/images/"),
+		new browserAPI.I("images/", "ui-icons_5c0d11_256x240.png", "css/images/"),
+		new browserAPI.I("images/", "ui-icons_cd0a0a_256x240.png", "css/images/"),
+		new browserAPI.I("images/", "animated-overlay.gif", "css/images/"),
 	],
 	addStyle: function () {
-		browser.extension.style.addFromResource("css/", "jquery-ui-1.11.4.custom.min.css", this.imageResources);
+		browserAPI.extension.style.addFromResource("css/", "jquery-ui-1.11.4.custom.min.css", this.imageResources);
 	},
 	initialize: function () {
 		if (hvStat.settings.isShowEquippedSet || hvStat.settings.isShowSidebarProfs) {
@@ -1247,7 +1247,7 @@ hvStat.gadget.wrenchIcon = {
 	},
 	onclick: function (event) {
 		this.removeEventListener(event.type, arguments.callee);
-		browser.extension.loadScript("scripts/", "hvstat-ui.js");
+		browserAPI.extension.loadScript("scripts/", "hvstat-ui.js");
 		hvStat.ui.createDialog();
 	},
 	onmouseover: function (event) {
@@ -1294,7 +1294,7 @@ hvStat.gadget.proficiencyPopupIcon = {
 		this.popup = document.createElement("div");
 		this.popup.id = "hvstat-proficiency-popup";
 		if (this.showProfData) {
-			this.popup.innerHTML = browser.extension.getResourceText("html/", "proficiency-table.html");
+			this.popup.innerHTML = browserAPI.extension.getResourceText("html/", "proficiency-table.html");
 			var tableData = this.popup.querySelectorAll('td');
 			var prof = hvStat.characterStatus.proficiencies;
 			//Equipment
@@ -3858,7 +3858,7 @@ hvStat.battle.enhancement.log = {
 		} else {
 			styleName = "battle-log-type0.css";
 		}
-		browser.extension.style.addFromResource("css/", styleName);
+		browserAPI.extension.style.addFromResource("css/", styleName);
 	},
 	highlight: function () {
 		// Copies the text of each Battle Log entry into a title element.
@@ -4069,7 +4069,7 @@ hvStat.battle.monster.popup = {
 	_templateHTML: null,
 	get templateHTML() {
 		if (!this._templateHTML) {
-			this._templateHTML = browser.extension.getResourceText("html/", "monster-popup.html");
+			this._templateHTML = browserAPI.extension.getResourceText("html/", "monster-popup.html");
 		}
 		return this._templateHTML;
 	},
@@ -5629,7 +5629,7 @@ hvStat.startup = {
 						});
 					}
 				}
-				browser.extension.modifyEventHandler(modifier, "");
+				browserAPI.extension.modifyEventHandler(modifier, "");
 			}
 			hvStat.startup.battleUpdate(true);
 			document.addEventListener("keydown", hvStat.battle.keyboard.documentKeydown);
@@ -5641,7 +5641,7 @@ hvStat.startup = {
 		} else {
 			hvStat.storage.roundContext.remove();
 			hvStat.storage.warningState.remove();
-			browser.extension.loadScript("scripts/", "hvstat-noncombat.js");
+			browserAPI.extension.loadScript("scripts/", "hvstat-noncombat.js");
 			if (hvStat.settings.isStartAlert || hvStat.settings.isShowEquippedSet ||
 					hvStat.settings.isTrackItems || hvStat.settings.isTrackShrine) {
 				hvStat.noncombat.support.captureStatuses();
@@ -5684,7 +5684,7 @@ hvStat.startup = {
 					hvStat.noncombat.support.popup.addObserver();
 				}
 				if (hvStat.settings.isDisableForgeHotKeys) {
-					browser.extension.modifyEventHandler(function() { document.onkeypress = null; }, "");
+					browserAPI.extension.modifyEventHandler(function() { document.onkeypress = null; }, "");
 				}
 				break;
 			case "moogleMailWriteNew":
@@ -5723,7 +5723,7 @@ hvStat.startup = {
 	},
 	battleUpdate: function (initialPageLoad) {
 		hvStat.battle.command.reset();
-		util.document.extractBody();
+		//util.document.extractBody();
 		if (initialPageLoad) {
 			hvStat.gadget.initialize();
 		}
@@ -5742,7 +5742,7 @@ hvStat.startup = {
 		if (hvStat.settings.doesScaleMonsterGauges) {
 			hvStat.battle.monster.scaleGaugesAll();
 		}
-		util.document.restoreBody();
+		//util.document.restoreBody();
 		if (!hvStat.database.loadingMonsterInfoFromDB) {
 			hvStat.battle.monster.showStatusAll();
 		}

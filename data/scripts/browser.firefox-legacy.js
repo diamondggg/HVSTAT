@@ -1,11 +1,11 @@
 //------------------------------------
 // Browser utilities
 //------------------------------------
-var browser = {
+var browserAPI = {
 	isChrome: false,
 };
 
-browser.extension = {
+browserAPI.extension = {
 	getResourceURL: function (resourcePath, resourceName) {
 		return self.options.relPath + resourcePath + resourceName;
 	},
@@ -13,16 +13,16 @@ browser.extension = {
 		return self.options[resourceName];
 	},
 	loadScript: function (scriptPath, scriptName) {
-		eval.call(window, browser.extension.getResourceText(scriptPath, scriptName));
+		eval.call(window, browserAPI.extension.getResourceText(scriptPath, scriptName));
 	},
 	modifyEventHandler: function (modifier, param) {
-		// Firefox extensions share Element.onclick and similar with the page,
+		// Firefox legacy extensions share Element.onclick and similar with the page,
 		// so just call the worker
 		modifier(param);
 	}
 };
 
-browser.extension.style = {
+browserAPI.extension.style = {
 	element: null,
 	add: function (styleText) {
         if (!this.element) {
@@ -33,14 +33,14 @@ browser.extension.style = {
         this.element.textContent += "\n" + styleText;
 	},
 	addFromResource: function (styleResourcePath, styleResouceName, imageResouceInfoArray) {
-		var styleText = browser.extension.getResourceText(styleResourcePath, styleResouceName);
+		var styleText = browserAPI.extension.getResourceText(styleResourcePath, styleResouceName);
 		if (Array.isArray(imageResouceInfoArray)) {
 			// Replace image URLs
 			for (var i = 0; i < imageResouceInfoArray.length; i++) {
 				var imageResourceName = imageResouceInfoArray[i].name;
 				var imageOriginalPath = imageResouceInfoArray[i].originalPath;
 				var imageResourcePath = imageResouceInfoArray[i].resourcePath;
-				var imageResourceURL = browser.extension.getResourceURL(imageResourcePath, imageResourceName);
+				var imageResourceURL = browserAPI.extension.getResourceURL(imageResourcePath, imageResourceName);
 				var regex = new RegExp(util.escapeRegex(imageOriginalPath + imageResourceName), "g");
 				styleText = styleText.replace(regex, imageResourceURL);
 			}
@@ -54,4 +54,4 @@ browser.extension.style = {
 	},
 };
 
-browser.I = browser.extension.style.ImageResourceInfo;	// Alias
+browserAPI.I = browserAPI.extension.style.ImageResourceInfo;	// Alias

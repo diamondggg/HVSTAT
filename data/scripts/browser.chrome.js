@@ -1,42 +1,48 @@
 //------------------------------------
 // Browser utilities
 //------------------------------------
-var browser = {
-	isChrome: true,
+var browserAPI = {
+	get isChrome() {
+		return navigator.userAgent.indexOf("Chrome") >= 0;
+	},
 };
 
-browser.extension = {
+browserAPI.extension = {
 	getResourceURL: function (resourcePath, resourceName) {
 		return chrome.extension.getURL(resourcePath + resourceName);
 	},
 	getResourceText: function (resourcePath, resourceName) {
 		var resourceText;
 		var request = new XMLHttpRequest();
-		var resourceURL = browser.extension.getResourceURL(resourcePath, resourceName);
+		var resourceURL = browserAPI.extension.getResourceURL(resourcePath, resourceName);
 		request.open("GET", resourceURL, false);
 		request.send(null);
 		return request.responseText;
 	},
 	loadScript: function (scriptPath, scriptName) {
-		eval.call(window, browser.extension.getResourceText(scriptPath, scriptName));
+		eval.call(window, browserAPI.extension.getResourceText(scriptPath, scriptName));
 	},
 	eventHandlerId: 0,
 	runScriptInPageContext: function (script) {
-		var scriptElement = document.createElement("script");
-		scriptElement.type = "text/javascript";
-		var id = "hvstat-tempjs-" + this.eventHandlerId++;
-		scriptElement.id = id;
-		scriptElement.textContent = script;
-		document.body.appendChild(scriptElement);
+		if (browserAPI.isChrome) {
+			var scriptElement = document.createElement("script");
+			scriptElement.type = "text/javascript";
+			var id = "hvstat-tempjs-" + this.eventHandlerId++;
+			scriptElement.id = id;
+			scriptElement.textContent = script + "document.body.removeChild(document.getElementById('"+id+"'));";
+			document.body.appendChild(scriptElement);
+		} else {
+			// Firefox has window.eval to evaluate in context of the web page,
+			// should be faster than DOM modifications
+			window.eval(script);
+		}
 	},
 	modifyEventHandler: function (modifier, param) {
-		// Chromium extensions have their own view of Element.onclick and similar,
-		// so inject script element into the page
-		runScriptInPageContext( "(" + modifier.toString() + ")(" + JSON.stringify(param) + ");document.body.removeChild(document.getElementById('"+id+"'));");
+		browserAPI.extension.runScriptInPageContext( "(" + modifier.toString() + ")(" + JSON.stringify(param) + ");");
 	}
 };
 
-browser.extension.style = {
+browserAPI.extension.style = {
 	element: null,
 	add: function (styleText) {
         if (!this.element) {
@@ -47,14 +53,14 @@ browser.extension.style = {
         this.element.textContent += "\n" + styleText;
 	},
 	addFromResource: function (styleResourcePath, styleResouceName, imageResouceInfoArray) {
-		var styleText = browser.extension.getResourceText(styleResourcePath, styleResouceName);
+		var styleText = browserAPI.extension.getResourceText(styleResourcePath, styleResouceName);
 		if (Array.isArray(imageResouceInfoArray)) {
 			// Replace image URLs
 			for (var i = 0; i < imageResouceInfoArray.length; i++) {
 				var imageResourceName = imageResouceInfoArray[i].name;
 				var imageOriginalPath = imageResouceInfoArray[i].originalPath;
 				var imageResourcePath = imageResouceInfoArray[i].resourcePath;
-				var imageResourceURL = browser.extension.getResourceURL(imageResourcePath, imageResourceName);
+				var imageResourceURL = browserAPI.extension.getResourceURL(imageResourcePath, imageResourceName);
 				var regex = new RegExp(util.escapeRegex(imageOriginalPath + imageResourceName), "g");
 				styleText = styleText.replace(regex, imageResourceURL);
 			}
@@ -68,4 +74,4 @@ browser.extension.style = {
 	},
 };
 
-browser.I = browser.extension.style.ImageResourceInfo;	// Alias
+browserAPI.I = browserAPI.extension.style.ImageResourceInfo;	// Alias

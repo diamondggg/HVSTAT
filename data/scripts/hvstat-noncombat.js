@@ -99,7 +99,7 @@ hvStat.noncombat.support = {
 				elements[i].onclick = makeNewOnClick(elements[i].onclick, message);
 			}
 		}
-		browser.extension.modifyEventHandler(modifier, message);
+		browserAPI.extension.modifyEventHandler(modifier, message);
 	},
 };
 
@@ -157,17 +157,17 @@ hvStat.noncombat.inventory = {};
 hvStat.noncombat.inventory.equipment = {
 	showTagInputFields: function (doClean) {
 		var dynjs_equip = null, dynjs_eqstore = null;
-		if (browser.isChrome) {
+		if (browserAPI.isChrome) {
 			script = "if (typeof dynjs_equip !== 'undefined') {document.body.setAttribute('dynjs_equip', JSON.stringify(dynjs_equip));}";
 			script += "if (typeof dynjs_eqstore !== 'undefined') {document.body.setAttribute('dynjs_eqstore', JSON.stringify(dynjs_eqstore));}";
-			browser.extension.runScriptInPageContext(script);
+			browserAPI.extension.runScriptInPageContext(script);
 			dynjs_equip = JSON.parse(document.body.getAttribute('dynjs_equip'));
 			dynjs_eqstore = JSON.parse(document.body.getAttribute('dynjs_eqstore'));
 			document.body.removeAttribute('dynjs_equip');
 			document.body.removeAttribute('dynjs_eqstore');
 		} else {
-			dynjs_equip = unsafeWindow.dynjs_equip;
-			dynjs_eqstore = unsafeWindow.dynjs_eqstore;
+			dynjs_equip = window.wrappedJSObject.dynjs_equip;
+			dynjs_eqstore = window.wrappedJSObject.dynjs_eqstore;
 		}
 		var equipTagArrayTable = [
 			{id: hvStat.equipmentTags.OneHandedIDs,	value: hvStat.equipmentTags.OneHandedTAGs,	idClean: [], valueClean: []},

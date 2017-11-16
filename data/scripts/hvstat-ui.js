@@ -5,13 +5,13 @@ hvStat.ui = {
 	// jQuery and jQuery UI must not be used except on the dialog panel for performance reason.
 	createDialog: function () {
 		// Load jQuery and jQuery UI
-		browser.extension.loadScript("scripts/", "jquery-2.2.4.min.js");
-		browser.extension.loadScript("scripts/", "jquery-ui-1.11.4.custom.min.js");
+		browserAPI.extension.loadScript("scripts/", "jquery-2.2.4.min.js");
+		browserAPI.extension.loadScript("scripts/", "jquery-ui-1.11.4.custom.min.js");
 		// Load CSS for the dialog
-		browser.extension.style.addFromResource("css/", "hvstat-ui.css");
-        browser.extension.style.add(
+		browserAPI.extension.style.addFromResource("css/", "hvstat-ui.css");
+        browserAPI.extension.style.add(
             ".ui-widget-overlay {background: #000 url(" +
-            browser.extension.getResourceURL("css/images/", "hvs.gif") +
+            browserAPI.extension.getResourceURL("css/images/", "hvs.gif") +
             ") 50% 50% repeat;z-index:1000 !important;opacity:.5;}" +
             ".ui-dialog .ui-dialog-titlebar{background:linear-gradient(to right, rgb(227, 224, 209), rgb(237, 235, 223));border:0px;}" +
             ".ui-dialog .ui-dialog-titlebar-close{outline:none}" +
@@ -19,11 +19,11 @@ hvStat.ui = {
             ".ui-tabs .ui-tabs-anchor:focus{outline:none;color:#B77}"
         );
 
-		browser.extension.loadScript("scripts/", "hvstat-migration.js");
+		browserAPI.extension.loadScript("scripts/", "hvstat-migration.js");
 
 		var panel = document.createElement("div");
 		panel.id = "hvstat-panel";
-		$(panel).html(browser.extension.getResourceText("html/", "main.html"));
+		$(panel).html(browserAPI.extension.getResourceText("html/", "main.html"));
 		$('body').append(panel);
 		$(panel).dialog({
 			autoOpen: false,
@@ -62,7 +62,7 @@ hvStat.ui.dropsPane = {
 		if (nChances === 0) {
 			innerHTML = "No data found. Complete a round to begin tracking.";
 		} else {
-			innerHTML = browser.extension.getResourceText("html/", "drops-pane.html");
+			innerHTML = browserAPI.extension.getResourceText("html/", "drops-pane.html");
 		}
 		$('#hvstat-drops-pane').html(innerHTML);
 		if (nChances === 0) {
@@ -72,7 +72,7 @@ hvStat.ui.dropsPane = {
 		if (!hvStat.settings.isTrackItems) {
 			$('#hvstat-drops-pane .hvstat-tracking-paused').show();
 		}
-		this.dropsDisplayTable = JSON.parse(browser.extension.getResourceText("json/", "drops-display-table.json"));
+		this.dropsDisplayTable = JSON.parse(browserAPI.extension.getResourceText("json/", "drops-display-table.json"));
 
 		// Overall Stats
 		$('#hvstat-drops-overall-stats-drop-type').change(this.onOverallStatsFilterChange);
@@ -245,7 +245,7 @@ hvStat.ui.dropsPane = {
 	updateEquipments: function (dropType, difficulty, battleType, limit) {
         $('#hvstat-drops-equipments-tbody').html(
             "</tr><tr><td colspan='6' style='text-align:center'><img src='" + 
-            browser.extension.getResourceURL("css/images/", "throbber.gif" ) + 
+            browserAPI.extension.getResourceURL("css/images/", "throbber.gif" ) + 
             "' /><br />Loading</td></tr>"
         );
 		try {
@@ -357,7 +357,7 @@ hvStat.ui.dropsPane = {
 
 hvStat.ui.databasePane = {
 	initialize: function () {
-		$('#hvstat-database-pane').html(browser.extension.getResourceText("html/", "database-pane.html"));
+		$('#hvstat-database-pane').html(browserAPI.extension.getResourceText("html/", "database-pane.html"));
 		this.showSizeOfOldMonsterDatabase();
 		$('#hvstat-database-monster-scan-results-export').click(function () {
 			hvStat.database.monsterScanResults.export(function (result) {
@@ -646,7 +646,7 @@ hvStat.ui.databasePane = {
 		});
 	},
 	showSizeOfOldMonsterDatabase: function () {
-		var size = ((localStorage.HVMonsterDatabase ? localStorage.HVMonsterDatabase.length : 0) / 1024 / 1024 * (browser.isChrome ? 2 : 1)).toFixed(2);
+		var size = ((localStorage.HVMonsterDatabase ? localStorage.HVMonsterDatabase.length : 0) / 1024 / 1024 * (browserAPI.isChrome ? 2 : 1)).toFixed(2);
 		$('#hvstat-database-old-monster-database-size').text(size);
 	},
 };
@@ -654,7 +654,7 @@ hvStat.ui.databasePane = {
 function initOverviewPane() {
 	var innerHTML;
 	if (hvStat.overview.totalRounds > 0) {
-		innerHTML = browser.extension.getResourceText("html/", "overview-pane.html");
+		innerHTML = browserAPI.extension.getResourceText("html/", "overview-pane.html");
 	} else {
 		innerHTML = "No data found. Complete a round to begin tracking.";
 	}
@@ -831,7 +831,7 @@ function initOverviewPane() {
 function initBattleStatsPane() {
 	var innerHTML;
 	if (hvStat.stats.rounds > 0) {
-		innerHTML = browser.extension.getResourceText("html/", "battle-stats-pane.html");
+		innerHTML = browserAPI.extension.getResourceText("html/", "battle-stats-pane.html");
 	} else {
 		innerHTML = "No data found. Complete a round to begin tracking.";
 	}
@@ -862,7 +862,7 @@ function initBattleStatsPane() {
 		var forall = hvStat.stats.forbidSpells[1] + hvStat.stats.forbidSpells[3];	// unused
 		var offhand = hvStat.stats.aOffhands[0] + hvStat.stats.aOffhands[2];
 		var offhanddam = hvStat.stats.aOffhands[1] + hvStat.stats.aOffhands[3];
-		if (browser.isChrome) dst1 = dst.toLocaleDateString() + " " + dst.toLocaleTimeString();
+		if (browserAPI.isChrome) dst1 = dst.toLocaleDateString() + " " + dst.toLocaleTimeString();
 		$('#hvstat-battle-stats-rounds-tracked').text(hvStat.stats.rounds);
 		$('#hvstat-battle-stats-since').text(dst1);
 		$('#hvstat-battle-stats-monsters-killed').text(hvStat.stats.kills);
@@ -946,12 +946,12 @@ function initBattleStatsPane() {
 			if (hvStat.statsBackups[i].datesave !== 0) {
 				nd.setTime( hvStat.statsBackups[i].datesave);
 				ds[i] = nd.toLocaleString();
-				if (browser.isChrome) ds[i] = nd.toLocaleDateString() + " " + nd.toLocaleTimeString();
+				if (browserAPI.isChrome) ds[i] = nd.toLocaleDateString() + " " + nd.toLocaleTimeString();
 			}
 			if (hvStat.statsBackups[i].datestart !== 0) {
 				nd.setTime( hvStat.statsBackups[i].datestart);
 				d[i] = nd.toLocaleString();
-				if (browser.isChrome) d[i] = nd.toLocaleDateString() + " " + nd.toLocaleTimeString();
+				if (browserAPI.isChrome) d[i] = nd.toLocaleDateString() + " " + nd.toLocaleTimeString();
 			}
 		}
 		alert( "Backup 1:\nLast save date: " + ds[1] + "\nStats tracked since: " + d[1] + "\nNumber of rounds tracked: " + hvStat.statsBackups[1].rounds
@@ -1009,7 +1009,7 @@ function initShrinePane() {
 	if (hvStat.shrine.totalRewards === 0) {
 		innerHTML = "No data found. Make an offering at Snowflake's Shrine to begin tracking.";
 	} else {
-		innerHTML = browser.extension.getResourceText("html/", "shrine-pane.html");
+		innerHTML = browserAPI.extension.getResourceText("html/", "shrine-pane.html");
 	}
 	$('#hvstat-shrine-pane').html(innerHTML);
 	if (hvStat.shrine.totalRewards > 0) {
@@ -1056,7 +1056,7 @@ function initShrinePane() {
 }
 
 function initSettingsPane() {
-	$("#hvstat-settings-pane").html(browser.extension.getResourceText("html/", "settings-pane.html"));
+	$("#hvstat-settings-pane").html(browserAPI.extension.getResourceText("html/", "settings-pane.html"));
 
 	//------------------------------------
 	// Set initial values
