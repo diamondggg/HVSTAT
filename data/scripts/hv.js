@@ -322,7 +322,7 @@ hv.initialize = function () {
 		if ((location == "arena" || location == "battle") || !isLocationFound) {
 			if (util.document.body.querySelector('#riddleform')) {
 				location = "riddle";
-			} else if (util.document.body.querySelector('#pattrform')) {
+			} else if (util.document.body.querySelector('#attr_form')) {
 				location = "character";
 			}
 		}

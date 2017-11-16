@@ -2731,7 +2731,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 		},
 	},*/
 	PROFICIENCY_GAIN: {
-		regex: /^You gain (0\.\d+) points of (.+?) proficiency\.$/,
+		regex: /^You gain (\d+\.\d+) points of (.+?) proficiency\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
 		evaluationFn: function (message) {
