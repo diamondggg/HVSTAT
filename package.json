@@ -6,6 +6,6 @@
   "description": "Collects data, analyzes statistics, and enhances the interface of the HentaiVerse",
   "author": "Various",
   "license": "MPL 2.0",
-  "version": "5.7.0",
+  "version": "5.7.1",
   "permissions": { "multiprocess": true }
 }
