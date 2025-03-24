@@ -2003,7 +2003,7 @@ hvStat.database.monsterSkills = new hvStat.database.ObjectStoreDelegate({
 	objectStoreName: "MonsterSkills",
 	regex: /^(\d+?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)$/gm,
 	headerLabels: ["ID", "NAME", "SKILL_TYPE", "ATTACK_TYPE", "DAMAGE_TYPE", "LAST_USED_DATE"],
-	timeStampPropertyName: "lastScanDate",
+	timeStampPropertyName: "lastUsedDate",
 	objectToTextArrayFn: function (obj) {
 		return [
 			obj.id,
@@ -2317,8 +2317,52 @@ hvStat.battle.eventLog = {
 				}
 			}
 		}
+		var evalContext = {
+			monstersUsedSkills: Object.create(null),
+			addSkill: function(name, verb, skill, success, damageType) {
+				var list = this.monstersUsedSkills[name];
+				if (!list) {
+					list = this.monstersUsedSkills[name] = [];
+				}
+				list.push({verb, skill, success, damageType});
+			},
+			monstersDeaths: Object.create(null),
+		};
 		for (var i = 0; i < messages.length; i++) {
-			messages[i].evaluate();
+			messages[i].evaluate(evalContext);
+		}
+		if (hvStat.settings.isRememberSkillsTypes) {
+			var monsters = Object.keys(evalContext.monstersUsedSkills);
+			for (var i = 0; i < monsters.length; i++) {
+				var monsterName = monsters[i];
+				if (monsterName.indexOf("Unnamed ") === 0) {
+					continue;
+				}
+				var monster = hvStat.battle.monster.findByName(monsterName);
+				if (!monster) {
+					continue;
+				}
+				// dead monsters are somewhat different from alive ones
+				// previously spiritPointRate was wrong after monster death, this was a workaround
+				// should be fixed now, keep it as a comment just in case of other problems with death
+				//if (evalContext.monstersDeaths[monsterName]) {
+				//	continue;
+				//}
+				var list = evalContext.monstersUsedSkills[monsterName];
+				// storeSkill() distinguishes mana/spirit skills
+				// by comparing monster's SP before and after the move.
+				// If a monster has used a spirit skill and a mana skill during the same move,
+				// this check breaks. So don't call storeSkill() in this case.
+				if (list.length >= 2 && monster.spiritPointRate < monster._prevSpRate) {
+					continue;
+				}
+				for (var j = 0; j < list.length; j++) {
+					if (list[j].success) {
+//						alert(monster + ":" + skillName  + ":" + skillVerb  + ":" + damageType);
+						monster.storeSkill(list[j].skill, list[j].verb, list[j].damageType);
+					}
+				}
+			}
 		}
 		if (isFirstInRound) {
 			if (hvStat.settings.isShowRoundReminder &&
@@ -2377,9 +2421,9 @@ hvStat.battle.eventLog.MessageType.prototype = {
 		var result = target && target.match(this.regex);
 		return result;
 	},
-	evaluate: function (message) {
+	evaluate: function (message, evalContext) {
 		if (this.evaluationFn instanceof Function) {
-			this.evaluationFn(message);
+			this.evaluationFn(message, evalContext);
 		}
 	},
 };
@@ -2405,9 +2449,9 @@ hvStat.battle.eventLog.Message.prototype = {
 			}
 		}
 	},
-	evaluate: function () {
+	evaluate: function (evalContext) {
 		if (this.messageType) {
-			this.messageType.evaluate(this);
+			this.messageType.evaluate(this, evalContext);
 		}
 	},
 };
@@ -2440,7 +2484,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 		regex: /^(.+?) (uses|casts) (.+?)\. You (evade|block|parry|resist) the attack\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
-		evaluationFn: function (message) {
+		evaluationFn: function (message, evalContext) {
 			var verb = message.regexResult[2];
 			if (verb === "uses") {
 				//TODO: pskills doesn't appear to be used anywhere; should it be removed?
@@ -2464,6 +2508,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 				hvStat.roundContext.pResists++;
 				break;
 			}
+			evalContext.addSkill(message.regexResult[1], verb, message.regexResult[3], false, null);
 		},
 	},
 	MONSTER_MISS: {
@@ -2479,7 +2524,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 		regex: /^(.+?) (uses|casts) (.+?), but misses the attack\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
-		evaluationFn: function (message) {
+		evaluationFn: function (message, evalContext) {
 			hvStat.roundContext.mAttempts++;
 			hvStat.roundContext.pDodges++;	// correct?
 
@@ -2489,6 +2534,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 			} else if (verb === "casts") {
 				hvStat.roundContext.mSpells++;
 			}
+			evalContext.addSkill(message.regexResult[1], verb, message.regexResult[3], false, null);
 		},
 	},
 	MONSTER_HIT: {
@@ -2507,7 +2553,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 		regex: /^(.+?) (uses|casts) (.+?)\, and (hits|crits) you for (\d+(?:\.\d+)?) (.+?) damage/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
-		evaluationFn: function (message) {
+		evaluationFn: function (message, evalContext) {
 			var monsterName = message.regexResult[1];
 			var skillVerb = message.regexResult[2];
 			var skillName = message.regexResult[3];
@@ -2528,13 +2574,7 @@ hvStat.battle.eventLog.messageTypeParams = {
 				hvStat.roundContext.pskills[5]++;
 				hvStat.roundContext.pskills[6] += damageAmount;
 			}
-			if (hvStat.settings.isRememberSkillsTypes && monsterName.indexOf("Unnamed ") !== 0) {
-				var monster = hvStat.battle.monster.findByName(monsterName);
-				if (monster) {
-//					alert(monster + ":" + skillName  + ":" + skillVerb  + ":" + damageType);
-					monster.storeSkill(skillName, skillVerb, damageType);
-				}
-			}
+			evalContext.addSkill(monsterName, skillVerb, skillName, true, damageType);
 		},
 	},
 /* 	MONSTER_DEFENSE: {
@@ -2903,8 +2943,9 @@ hvStat.battle.eventLog.messageTypeParams = {
 		regex: /^(.+?) has been defeated\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
-		evaluationFn: function (message) {
+		evaluationFn: function (message, evalContext) {
 			hvStat.roundContext.kills++;
+			evalContext.monstersDeaths[message.regexResult[1]] = true;
 		},
 	},
 	SKILL_COOLDOWN_EXPIRATION: {
@@ -2994,13 +3035,14 @@ hvStat.battle.eventLog.messageTypeParams = {
 		regex: /^(.+?) casts (.+?)\, but is absorbed\. You gain (\d+(?:\.\d+)?) Magic Points\.$/,
 		relatedMessageTypeNames: null,
 		contentType: "text",
-		evaluationFn: function (message) {
+		evaluationFn: function (message, evalContext) {
 			if (hvStat.settings.isWarnAbsorbTrigger) {
 				hvStat.battle.warningSystem.enqueueAlert("Absorbing Ward has triggered.");
 			}
 			hvStat.roundContext.mSpells++;
 			hvStat.roundContext.absArry[1]++;
 			hvStat.roundContext.absArry[2] += Number(message.regexResult[3]);
+			evalContext.addSkill(message.regexResult[1], "casts", message.regexResult[2], false, null);
 		},
 	},
 	SPARK_OF_LIFE_SUCCESS: {
@@ -4992,15 +5034,32 @@ hvStat.battle.monster.Monster.prototype = {
 				//console.debug(cursor.value);
 				var skill = new hvStat.battle.monster.MonsterSkill(cursor.value);
 				//console.debug(skill.valueObject);
-				that._skills.push(skill);
+				// Historically, some mana skills got saved as spirit skills
+				// because a monster has casted both during the same move
+				// and the decrease of SP was interpreted as a sign of spirit skill.
+				// Should not appear again, but the database might keep wrong records.
+				// Out of all spirit skills, load only the last one.
+				if (skill.skillType === hvStat.constant.skillType.SPIRIT) {
+					var i;
+					for (i = 0; i < that._skills.length; i++) {
+						if (that._skills[i].skillType === hvStat.constant.skillType.SPIRIT) {
+							break;
+						}
+					}
+					if (i == that._skills.length || that._skills[i].lastUsedDate < skill.lastUsedDate) {
+						that._skills[i] = skill;
+					}
+				} else {
+					that._skills.push(skill);
+				}
 				//console.log("get from MonsterSkills: id = " + that._id);
 				cursor.continue();
 			} else {
 				that._waitingForGetResponseOfMonsterSkills = false;
 				//console.log("get from MonsterSkills: finished: id = " + that._id);
-			}
-			if (!that.isWaitingForGetResponse) {
-				callback();
+				if (!that.isWaitingForGetResponse) {
+					callback();
+				}
 			}
 		};
 		reqOpen.onerror = function () {
