@@ -4611,6 +4611,8 @@ hvStat.battle.monster.Monster.prototype = {
 				}
 				if (hv.settings.isUsingHVFontEngine) {
 					nameOuterFrameElement.style.width = "auto"; // Tweak for Firefox
+					nameOuterFrameElement.style.display = "flex";
+					nameOuterFrameElement.style.flexWrap = "wrap";
 					nameInnerFrameElement.style.width = "auto"; // Tweak for Firefox
 					nameInnerFrameElement.lastChild.style.clear = "none";
 					div = document.createElement("div");
