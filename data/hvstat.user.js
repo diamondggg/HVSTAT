@@ -4819,7 +4819,10 @@ hvStat.battle.monster.Monster.prototype = {
 			this._gauges = [];
 			for (var i = 0; i < allGauges.length; i++) {
 				var gauge = allGauges[i];
-				if (gauge.parentNode.parentNode.parentNode.parentNode === this.baseElement) {
+				// hp for dead monsters is a direct child of div.btm5
+				// while everything else is a child of div.chbd which is a child of div.btm5
+				var parent = gauge.parentNode.parentNode.parentNode;
+				if (parent === this.baseElement || parent.parentNode === this.baseElement) {
 					this._gauges.push(gauge);
 				}
 			}
@@ -4830,6 +4833,8 @@ hvStat.battle.monster.Monster.prototype = {
 	get name() { return this._name; },
 	get maxHp() { return this._maxHp; },
 	get healthPointRate() {
+		// HP gauge for dead monsters is different, don't try gaugeRate on it
+		if (this.isDead) return 0;
 		return this.gaugeRate(0);
 	},
 	get magicPointRate() {

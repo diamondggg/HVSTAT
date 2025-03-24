@@ -287,7 +287,7 @@ hv.initialize = function () {
 			},
 			get monsterGauges() {
 				if (!this._monsterGauges) {
-					this._monsterGauges = this.monsterPane.querySelectorAll('div.btm1 > div.btm4 > div.btm5 > div.chbd > img:first-child');
+					this._monsterGauges = this.monsterPane.querySelectorAll('div.btm1 > div.btm4 > div.btm5 img:first-child');
 				}
 				return this._monsterGauges;
 			},
