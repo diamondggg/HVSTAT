@@ -3272,12 +3272,12 @@ hvStat.battle.eventLog.messageTypeParams = {
 		},
 	},
 	ARENA_CLEAR_BONUS: {
-		regex: /Arena Clear Bonus\! <span style="\s*color\s*:\s*(.+?)\s*;?\s*">\[(.+?)\]<\/span>$/,
+		regex: /(Arena|Battle) Clear Bonus\! <span style="\s*color\s*:\s*(.+?)\s*;?\s*">\[(.+?)\]<\/span>$/,
 		relatedMessageTypeNames: null,
 		contentType: "html",
 		evaluationFn: function (message) {
-			var styleColor = message.regexResult[1];
-			var stuffName = message.regexResult[2];
+			var styleColor = message.regexResult[2];
+			var stuffName = message.regexResult[3];
 			var regexResult, qty = 0;
 			switch (styleColor.toLowerCase()) {
 			case "#00b000":	// Item
