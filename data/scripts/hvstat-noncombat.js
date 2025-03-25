@@ -15,7 +15,7 @@ hvStat.noncombat.support = {
 			hvStat.characterStatus.difficulty.name = hvStat.constant.difficulty[hv.settings.difficulty].name;
 			hvStat.characterStatus.difficulty.index = difficulties.indexOf(difficulty);
 		}
-		elements = document.querySelectorAll('#eqsl img');
+		var elements = document.querySelectorAll('#eqsl img');
 		var result;
 		for (var i = 0; i < elements.length; i++) {
 			result = /set(\d)_on/.exec(elements[i].getAttribute("src"));
@@ -49,16 +49,14 @@ hvStat.noncombat.support = {
 		hvStat.storage.characterStatus.save();
 	},
 	captureShrine: function () {
-		var messageBoxElement = document.querySelector('#messagebox');
+		var messageBoxElement = document.getElementById('messagebox_inner') || document.getElementById('messagebox');
 		if (!messageBoxElement) {
 			return;
 		}
-		// .fc for HV standard "font", .fac for normal text in custom font
-		var messageElements = messageBoxElement.querySelectorAll('div.fc, div.fac');
-		var message0 = hv.util.innerText(messageElements[0]);
+		var message = messageBoxElement.innerText.split(/\n+/);
+		var message0 = message[0], message1 = message[1];
 		if (message0.match(/power/i)) {
 			hvStat.shrine.artifactsTraded++;
-			var message1 = hv.util.innerText(messageElements[1]);
 			if (message1.match(/Elixir/i)) {
 				hvStat.shrine.artifactElixer++;
 			} else if (message1.match(/crystal/i)) {
@@ -72,8 +70,7 @@ hvStat.noncombat.support = {
 				hvStat.shrine.artifactItem++;
 			}
 		} else if (message0.match(/item/i)) {
-			var message2 = hv.util.innerText(messageElements[2]);
-			hvStat.shrine.trophyArray.push(hvStat.util.capitalizeEquipmentName(message2));
+			hvStat.shrine.trophyArray.push(hvStat.util.capitalizeEquipmentName(message1));
 		}
 		hvStat.storage.shrine.save();
 	},
