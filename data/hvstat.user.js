@@ -4142,15 +4142,20 @@ hvStat.battle.monster.popup = {
 		(function (event, that) {
 			var popup = hvStat.battle.monster.popup;
 			var delay = Number(hvStat.settings.monsterPopupDelay);
+			if (popup.timerId) return;
 			popup.timerId = setTimeout(function () {
 				popup.show.call(that, event);
+				popup.timerId = null;
 			}, delay);
 		})(event, this);
 	},
 	onmouseout: function (event) {
 		var popup = hvStat.battle.monster.popup;
 		popup.hide();
-		clearTimeout(popup.timerId);
+		if (popup.timerId) {
+			clearTimeout(popup.timerId);
+			popup.timerId = null;
+		}
 	},
 };
 
