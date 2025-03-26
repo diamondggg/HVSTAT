@@ -5,8 +5,8 @@ hvStat.ui = {
 	// jQuery and jQuery UI must not be used except on the dialog panel for performance reason.
 	createDialog: async function () {
 		// Load jQuery and jQuery UI
-		await browserAPI.extension.loadScript("scripts/", "jquery-2.2.4.min.js");
-		await browserAPI.extension.loadScript("scripts/", "jquery-ui-1.11.4.custom.min.js");
+		await browserAPI.extension.loadScript("scripts/", "jquery-3.7.1.min.js");
+		await browserAPI.extension.loadScript("scripts/", "jquery-ui-1.14.1.custom.min.js");
 		// Load CSS for the dialog
 		await browserAPI.extension.style.addFromResource("css/", "hvstat-ui.css");
         browserAPI.extension.style.add(
@@ -43,7 +43,7 @@ hvStat.ui = {
 		initShrinePane();
 		hvStat.ui.databasePane.initialize();
 		initSettingsPane();
-		$('#hvstat-icon').click(function () {
+		$('#hvstat-icon').on("click", function () {
 			if ($(panel).dialog("isOpen")) {
 				$(panel).dialog("close");
 			} else {
@@ -75,18 +75,18 @@ hvStat.ui.dropsPane = {
 		this.dropsDisplayTable = JSON.parse(await browserAPI.extension.getResourceText("json/", "drops-display-table.json"));
 
 		// Overall Stats
-		$('#hvstat-drops-overall-stats-drop-type').change(this.onOverallStatsFilterChange);
-		$('#hvstat-drops-overall-stats-difficulty').change(this.onOverallStatsFilterChange).change();
+		$('#hvstat-drops-overall-stats-drop-type').on("change", this.onOverallStatsFilterChange);
+		$('#hvstat-drops-overall-stats-difficulty').on("change", this.onOverallStatsFilterChange).trigger("change");
 		// Items
-		$('#hvstat-drops-items-drop-type').change(this.onItemFilterChange);
-		$('#hvstat-drops-items-difficulty').change(this.onItemFilterChange);
-		$('#hvstat-drops-items-battle-type').change(this.onItemFilterChange).change();
+		$('#hvstat-drops-items-drop-type').on("change", this.onItemFilterChange);
+		$('#hvstat-drops-items-difficulty').on("change", this.onItemFilterChange);
+		$('#hvstat-drops-items-battle-type').on("change", this.onItemFilterChange).trigger("change");
 		// Equipments
-		$('#hvstat-drops-equipments-drop-type').change(this.onEquipmentFilterChange);
-		$('#hvstat-drops-equipments-difficulty').change(this.onEquipmentFilterChange);
-		$('#hvstat-drops-equipments-battle-type').change(this.onEquipmentFilterChange).change();
+		$('#hvstat-drops-equipments-drop-type').on("change", this.onEquipmentFilterChange);
+		$('#hvstat-drops-equipments-difficulty').on("change", this.onEquipmentFilterChange);
+		$('#hvstat-drops-equipments-battle-type').on("change", this.onEquipmentFilterChange).trigger("change");
 		// Footer
-		$('#hvstat-drops-reset').click(function () {
+		$('#hvstat-drops-reset').on("click", function () {
 			if (confirm("Are you sure to reset Drops tab?\nThe data of Item Drops and Equipment Drops on the database will also be deleted.")) {
 				hvStat.storage.dropStats.reset();
 				hvStat.database.itemDrops.delete(hvStat.ui.dropsPane.initialize);
@@ -302,7 +302,7 @@ hvStat.ui.dropsPane = {
 							'</tr>\n';
 					}
 					$('#hvstat-drops-equipments-tbody').html(equipmentsHTML);
-                    $("#showAllDropsLink").click(function () {
+                    $("#showAllDropsLink").on("click", function () {
                         hvStat.ui.dropsPane.updateEquipments(dropType, difficulty, battleType, 0);
                     });
 				}
@@ -359,7 +359,7 @@ hvStat.ui.databasePane = {
 	initialize: async function () {
 		$('#hvstat-database-pane').html(await browserAPI.extension.getResourceText("html/", "database-pane.html"));
 		this.showSizeOfOldMonsterDatabase();
-		$('#hvstat-database-monster-scan-results-export').click(function () {
+		$('#hvstat-database-monster-scan-results-export').on("click", function () {
 			hvStat.database.monsterScanResults.export(function (result) {
 				if (result.rowCount === 0) {
 					alert("There are no data.");
@@ -372,7 +372,7 @@ hvStat.ui.databasePane = {
 				}
 			});
 		});
-		$('#hvstat-database-monster-skills-export').click(function () {
+		$('#hvstat-database-monster-skills-export').on("click", function () {
 			hvStat.database.monsterSkills.export(function (result) {
 				var downloadLink = $('#hvstat-database-monster-skills-download');
 				if (result.rowCount === 0) {
@@ -385,7 +385,7 @@ hvStat.ui.databasePane = {
 				}
 			});
 		});
-		$('#hvstat-database-item-drops-export').click(function () {
+		$('#hvstat-database-item-drops-export').on("click", function () {
 			hvStat.database.itemDrops.export(function (result) {
 				var downloadLink = $('#hvstat-database-item-drops-download');
 				if (result.rowCount === 0) {
@@ -398,7 +398,7 @@ hvStat.ui.databasePane = {
 				}
 			});
 		});
-		$('#hvstat-database-equipment-drops-export').click(function () {
+		$('#hvstat-database-equipment-drops-export').on("click", function () {
 			hvStat.database.equipmentDrops.export(function (result) {
 				var downloadLink = $('#hvstat-database-equipment-drops-download');
 				if (result.rowCount === 0) {
@@ -412,7 +412,7 @@ hvStat.ui.databasePane = {
 			});
 		});
 		
-		$('#hvstat-localstorage-overview-export').click(function () {
+		$('#hvstat-localstorage-overview-export').on("click", function () {
 			if (confirm("Export Overview Stats?")) {
 				var downloadLink = $('#hvstat-localstorage-overview-download');
 				downloadLink.attr("href", "data:text/json;charset=utf-8," + JSON.stringify(localStorage["HVOverview"]));
@@ -421,7 +421,7 @@ hvStat.ui.databasePane = {
 				alert("Ready to export.\nClick the download link.");
 			}
 		});
-		$('#hvstat-localstorage-shrine-export').click(function () {
+		$('#hvstat-localstorage-shrine-export').on("click", function () {
 			if (confirm("Export Shrine Stats?")) {
 				var downloadLink = $('#hvstat-localstorage-shrine-download');
 				downloadLink.attr("href", "data:text/json;charset=utf-8," + JSON.stringify(localStorage["HVShrine"]));
@@ -430,7 +430,7 @@ hvStat.ui.databasePane = {
 				alert("Ready to export.\nClick the download link.");
 			}
 		});
-		$('#hvstat-localstorage-battle-export').click(function () {
+		$('#hvstat-localstorage-battle-export').on("click", function () {
 			if (confirm("Export Battle Stats?")) {
 				var downloadLink = $('#hvstat-localstorage-battle-download');
 				downloadLink.attr("href", "data:text/json;charset=utf-8," + JSON.stringify(localStorage["HVStats"]));
@@ -439,7 +439,7 @@ hvStat.ui.databasePane = {
 				alert("Ready to export.\nClick the download link.");
 			}
 		});
-		$('#hvstat-localstorage-drops-export').click(function () {
+		$('#hvstat-localstorage-drops-export').on("click", function () {
 			if (confirm("Export Drop Stats?")) {
 				var downloadLink = $('#hvstat-localstorage-drops-download');
 				downloadLink.attr("href", "data:text/json;charset=utf-8," + JSON.stringify(localStorage["hvStat.dropStats"]));
@@ -448,7 +448,7 @@ hvStat.ui.databasePane = {
 				alert("Ready to export.\nClick the download link.");
 			}
 		});
-		$('#hvstat-localstorage-settings-export').click(function () {
+		$('#hvstat-localstorage-settings-export').on("click", function () {
 			if (confirm("Export Settings?")) {
 				var downloadLink = $('#hvstat-localstorage-settings-download');
 				downloadLink.attr("href", "data:text/json;charset=utf-8," + JSON.stringify(localStorage["HVSettings"]));
@@ -458,7 +458,7 @@ hvStat.ui.databasePane = {
 			}
 		});
 		
-		$('#hvstat-database-monster-scan-results-import').change(function (event) {
+		$('#hvstat-database-monster-scan-results-import').on("change", function (event) {
 			var file = event.target.files[0];
 			if (!file) {
 				alert("Failed to load file");
@@ -468,7 +468,7 @@ hvStat.ui.databasePane = {
 				}
 			}
 		});
-		$('#hvstat-database-monster-skills-import').change(function (event) {
+		$('#hvstat-database-monster-skills-import').on("change", function (event) {
 			var file = event.target.files[0];
 			if (!file) {
 				alert("Failed to load file");
@@ -478,7 +478,7 @@ hvStat.ui.databasePane = {
 				}
 			}
 		});
-		$('#hvstat-database-item-drops-import').change(function (event) {
+		$('#hvstat-database-item-drops-import').on("change", function (event) {
 			var file = event.target.files[0];
 			if (!file) {
 				alert("Failed to load file");
@@ -488,7 +488,7 @@ hvStat.ui.databasePane = {
 				}
 			}
 		});
-		$('#hvstat-database-equipment-drops-import').change(function (event) {
+		$('#hvstat-database-equipment-drops-import').on("change", function (event) {
 			var file = event.target.files[0];
 			if (!file) {
 				alert("Failed to load file");
@@ -499,7 +499,7 @@ hvStat.ui.databasePane = {
 			}
 		});
 		
-		$('#hvstat-localstorage-overview-import').change(function (event) {
+		$('#hvstat-localstorage-overview-import').on("change", function (event) {
 			var file = event.target.files[0];
 			if (!file) {
 				alert("Failed to load file");
@@ -519,7 +519,7 @@ hvStat.ui.databasePane = {
 				}
 			}
 		});
-		$('#hvstat-localstorage-shrine-import').change(function (event) {
+		$('#hvstat-localstorage-shrine-import').on("change", function (event) {
 			var file = event.target.files[0];
 			if (!file) {
 				alert("Failed to load file");
@@ -539,7 +539,7 @@ hvStat.ui.databasePane = {
 				}
 			}
 		});
-		$('#hvstat-localstorage-battle-import').change(function (event) {
+		$('#hvstat-localstorage-battle-import').on("change", function (event) {
 			var file = event.target.files[0];
 			if (!file) {
 				alert("Failed to load file");
@@ -559,7 +559,7 @@ hvStat.ui.databasePane = {
 				}
 			}
 		});
-		$('#hvstat-localstorage-drops-import').change(function (event) {
+		$('#hvstat-localstorage-drops-import').on("change", function (event) {
 			var file = event.target.files[0];
 			if (!file) {
 				alert("Failed to load file");
@@ -579,7 +579,7 @@ hvStat.ui.databasePane = {
 				}
 			}
 		});
-		$('#hvstat-localstorage-settings-import').change(function (event) {
+		$('#hvstat-localstorage-settings-import').on("change", function (event) {
 			var file = event.target.files[0];
 			if (!file) {
 				alert("Failed to load file");
@@ -600,45 +600,45 @@ hvStat.ui.databasePane = {
 			}
 		});
 		
-		$('#hvstat-database-monster-scan-results-delete').click(function () {
+		$('#hvstat-database-monster-scan-results-delete').on("click", function () {
 			if (confirm("Are you sure to delete the data of monster scan results?")) {
 				hvStat.database.monsterScanResults.delete(function (result) {
 					alert("Your data of monster scan results have been deleted.\nCount: " + result.count);
 				});
 			}
 		});
-		$('#hvstat-database-monster-skills-delete').click(function () {
+		$('#hvstat-database-monster-skills-delete').on("click", function () {
 			if (confirm("Are you sure to delete the data of monster skills?")) {
 				hvStat.database.monsterSkills.delete(function (result) {
 					alert("Your data of monster skills have been deleted.\nCount: " + result.count);
 				});
 			}
 		});
-		$('#hvstat-database-item-drops-delete').click(function () {
+		$('#hvstat-database-item-drops-delete').on("click", function () {
 			if (confirm("Are you sure to delete the data of item drops?")) {
 				hvStat.database.itemDrops.delete(function (result) {
 					alert("Your data of item drops have been deleted.\nCount: " + result.count);
 				});
 			}
 		});
-		$('#hvstat-database-equipment-drops-delete').click(function () {
+		$('#hvstat-database-equipment-drops-delete').on("click", function () {
 			if (confirm("Are you sure to delete the data of equipment drops?")) {
 				hvStat.database.equipmentDrops.delete(function (result) {
 					alert("Your data of equipment drops have been deleted.\nCount: " + result.count);
 				});
 			}
 		});
-		$('#hvstat-database-delete').click(function () {
+		$('#hvstat-database-delete').on("click", function () {
 			if (confirm("Are you really sure to delete your database?")) {
 				hvStat.database.deleteIndexedDB();
 			}
 		});
-		$('#hvstat-database-migrate-monster-database').click(function () {
+		$('#hvstat-database-migrate-monster-database').on("click", function () {
 			if (confirm("Are you sure to migrate your monster database?")) {
 				hvStat.migration.monsterDatabase.migrateDatabase();
 			}
 		});
-		$('#hvstat-database-delete-old-monster-database').click(function () {
+		$('#hvstat-database-delete-old-monster-database').on("click", function () {
 			if (confirm("Are you really sure to delete your old monster database?")) {
 				hvStat.migration.monsterDatabase.deleteOldDatabase();
 				hvStat.ui.databasePane.showSizeOfOldMonsterDatabase();
@@ -821,7 +821,7 @@ async function initOverviewPane() {
 	$(spanDropsArtifactLastFound[0]).text(lastFoundName);
 	$(spanDropsArtifactLastFound[1]).text(lastFoundTime);
 
-	$('#hvstat-overview-reset').click(function () {
+	$('#hvstat-overview-reset').on("click", function () {
 		if (confirm("Reset Overview tab?")) {
 			hvStat.storage.overview.reset();
 		}
@@ -933,10 +933,10 @@ async function initBattleStatsPane() {
 		$('#hvstat-battle-stats-average-total-damage-taken-per-round').text(hvStat.stats.rounds === 0 ? 0 : ((hvStat.stats.dTaken[0] + hvStat.stats.dTaken[1]) / hvStat.stats.rounds).toFixed(2));
 	}
 
-	$("._resetStats").click(function () {
+	$("._resetStats").on("click", function () {
 		if (confirm("Reset Stats tab?")) hvStat.storage.stats.reset();
 	});
-	$("._checkBackups").click(function () {
+	$("._checkBackups").on("click", function () {
 		var ds = [];
 		var d = [];
 		ds[1] = ds[2] = ds[3] = ds[4] = ds[5] = "None yet";
@@ -961,7 +961,7 @@ async function initBattleStatsPane() {
 			+ "\n\nBackup 5\nLast save date: " + ds[5] + "\nStats tracked since: " + d[5] + "\nNumber of rounds tracked: " + hvStat.statsBackups[5].rounds);
 	});
 
-	$("._backupFunc").click(function () {
+	$("._backupFunc").on("click", function () {
 		var backupID = Number(document.getElementById("BackupNumber").options[document.getElementById("BackupNumber").selectedIndex].value);
 		if (backupID < 1 || backupID > 5) {
 			alert ("'" + backupID + "'" + " is not correct number: " + "Choose beetwen 1-5");
@@ -1041,13 +1041,13 @@ async function initShrinePane() {
 			trophiesHTML += '<li>' + hvStat.shrine.trophyArray[i] + '</li>';
 		}
 		$('#hvstat-shrine-trophies').html(trophiesHTML);
-		$('#hvstat-shrine-clear-trophies').click(function () {
+		$('#hvstat-shrine-clear-trophies').on("click", function () {
 			if (confirm("Clear Trophy list?")) {
 				hvStat.shrine.trophyArray = [];
 				hvStat.storage.shrine.save();
 			}
 		});
-		$('#hvstat-shrine-reset').click(function () {
+		$('#hvstat-shrine-reset').on("click", function () {
 			if (confirm("Reset Shrine tab?")) {
 				hvStat.storage.shrine.reset();
 			}
@@ -1271,153 +1271,153 @@ async function initSettingsPane() {
 	//------------------------------------
 
 	// General
-	$("input[name=isChangePageTitle]").click(saveSettings);
-	$("input[name=customPageTitle]").change(saveSettings);
-	$("input[name=isShowEquippedSet]").click(saveSettings);
-	$("input[name=isShowSidebarProfs]").click(saveSettings);
-	$("input[name=isStartAlert]").click(saveSettings);
-	$("select[id=StartAlertDifficulty]").change(saveSettings);
-	$("input[name^=isShowTags]").click(saveSettings);
-	$("input[name=warnIfHttp]").click(saveSettings);
+	$("input[name=isChangePageTitle]").on("click", saveSettings);
+	$("input[name=customPageTitle]").on("change", saveSettings);
+	$("input[name=isShowEquippedSet]").on("click", saveSettings);
+	$("input[name=isShowSidebarProfs]").on("click", saveSettings);
+	$("input[name=isStartAlert]").on("click", saveSettings);
+	$("select[id=StartAlertDifficulty]").on("change", saveSettings);
+	$("input[name^=isShowTags]").on("click", saveSettings);
+	$("input[name=warnIfHttp]").on("click", saveSettings);
 
 	// Keyboard
-	$("input[name=adjustKeyEventHandling]").click(saveSettings);
-	$("input[name=isEnableScanHotkey]").click(saveSettings);
-	$("input[name=isEnableSkillHotkey]").click(saveSettings);
-	$("input[name=reverseSkillHotkeyTraversalOrder]").click(saveSettings);
-	$("input[name=enableOFCHotkey]").click(saveSettings);
-	$("input[name=enableScrollHotkey]").click(saveSettings);
-	$("input[name=isDisableForgeHotKeys]").click(saveSettings);
+	$("input[name=adjustKeyEventHandling]").on("click", saveSettings);
+	$("input[name=isEnableScanHotkey]").on("click", saveSettings);
+	$("input[name=isEnableSkillHotkey]").on("click", saveSettings);
+	$("input[name=reverseSkillHotkeyTraversalOrder]").on("click", saveSettings);
+	$("input[name=enableOFCHotkey]").on("click", saveSettings);
+	$("input[name=enableScrollHotkey]").on("click", saveSettings);
+	$("input[name=isDisableForgeHotKeys]").on("click", saveSettings);
 
 	// Tracking Functions
-	$("input[name=isTrackStats]").click(saveSettings);
-	$("input[name=isTrackShrine]").click(saveSettings);
-	$("input[name=isTrackItems]").click(saveSettings);
-	$("input[name=noTrackCredits]").click(saveSettings);
-	$("input[name=noTrackItems]").click(saveSettings);
-	$("input[name=noTrackCrystals]").click(saveSettings);
-	$("input[name=noTrackMonsterFood]").click(saveSettings);
-	$("input[name=noTrackTokens]").click(saveSettings);
-	$("input[name=noTrackArtifacts]").click(saveSettings);
-	$("input[name=noTrackTrophies]").click(saveSettings);
-	$("input[name=noTrackEquip]").click(saveSettings);
+	$("input[name=isTrackStats]").on("click", saveSettings);
+	$("input[name=isTrackShrine]").on("click", saveSettings);
+	$("input[name=isTrackItems]").on("click", saveSettings);
+	$("input[name=noTrackCredits]").on("click", saveSettings);
+	$("input[name=noTrackItems]").on("click", saveSettings);
+	$("input[name=noTrackCrystals]").on("click", saveSettings);
+	$("input[name=noTrackMonsterFood]").on("click", saveSettings);
+	$("input[name=noTrackTokens]").on("click", saveSettings);
+	$("input[name=noTrackArtifacts]").on("click", saveSettings);
+	$("input[name=noTrackTrophies]").on("click", saveSettings);
+	$("input[name=noTrackEquip]").on("click", saveSettings);
 
 	// Battle Enhancement
-	$("input[name=isShowRoundCounter]").click(saveSettings);
-	$("input[name=isShowRoundReminder]").click(saveSettings);
-	$("input[name=reminderMinRounds]").change(saveSettings);
-	$("input[name=reminderBeforeEnd]").change(saveSettings);
-	$("input[name=isShowSelfDuration]").click(saveSettings);
-	$("input[name=isSelfEffectsWarnColor]").click(saveSettings);
-	$("input[name=SelfWarnOrangeRounds]").change(saveSettings);
-	$("input[name=SelfWarnRedRounds]").change(saveSettings);
-	$("input[name=showSelfEffectStackLevel]").click(saveSettings);
-	$("input[name=isShowPowerupBox]").click(saveSettings);
-	$("input[name=isShowHighlight]").click(saveSettings);
-	$("input[name=isAltHighlight]").click(saveSettings);
-	$("input[name=isShowDivider]").click(saveSettings);
-	$("input[name=isShowScanButton]").click(saveSettings);
-	$("input[name=highlightScanButtonWhenScanResultExpired]").click(saveSettings);
-	$("input[name=nDaysUntilScanResultExpiration]").change(saveSettings);
-	$("input[name=isShowSkillButton]").click(saveSettings);
-	$("input[name=isShowMonsterNumber]").click(saveSettings);
-	$("input[name=isShowMonsterDuration]").click(saveSettings);
-	$("input[name=isMonstersEffectsWarnColor]").click(saveSettings);
-	$("input[name=MonstersWarnOrangeRounds]").change(saveSettings);
-	$("input[name=MonstersWarnRedRounds]").change(saveSettings);
-	$("input[name=showMonsterEffectStackLevel]").click(saveSettings);
-	$("input[name=isShowEndStats]").click(saveSettings);
-	$("input[name=isShowEndProfs]").click(saveSettings); //isShowEndProfs added by Ilirith
-	$("input[name=isShowEndProfsMagic]").click(saveSettings); //isShowEndProfs added by Ilirith
-	$("input[name=isShowEndProfsArmor]").click(saveSettings); //isShowEndProfs added by Ilirith
-	$("input[name=isShowEndProfsWeapon]").click(saveSettings); //isShowEndProfs added by Ilirith
-	$("input[name=autoAdvanceBattleRound]").click(saveSettings);
-	$("input[name=autoAdvanceBattleRoundDelay]").change(saveSettings);
+	$("input[name=isShowRoundCounter]").on("click", saveSettings);
+	$("input[name=isShowRoundReminder]").on("click", saveSettings);
+	$("input[name=reminderMinRounds]").on("change", saveSettings);
+	$("input[name=reminderBeforeEnd]").on("change", saveSettings);
+	$("input[name=isShowSelfDuration]").on("click", saveSettings);
+	$("input[name=isSelfEffectsWarnColor]").on("click", saveSettings);
+	$("input[name=SelfWarnOrangeRounds]").on("change", saveSettings);
+	$("input[name=SelfWarnRedRounds]").on("change", saveSettings);
+	$("input[name=showSelfEffectStackLevel]").on("click", saveSettings);
+	$("input[name=isShowPowerupBox]").on("click", saveSettings);
+	$("input[name=isShowHighlight]").on("click", saveSettings);
+	$("input[name=isAltHighlight]").on("click", saveSettings);
+	$("input[name=isShowDivider]").on("click", saveSettings);
+	$("input[name=isShowScanButton]").on("click", saveSettings);
+	$("input[name=highlightScanButtonWhenScanResultExpired]").on("click", saveSettings);
+	$("input[name=nDaysUntilScanResultExpiration]").on("change", saveSettings);
+	$("input[name=isShowSkillButton]").on("click", saveSettings);
+	$("input[name=isShowMonsterNumber]").on("click", saveSettings);
+	$("input[name=isShowMonsterDuration]").on("click", saveSettings);
+	$("input[name=isMonstersEffectsWarnColor]").on("click", saveSettings);
+	$("input[name=MonstersWarnOrangeRounds]").on("change", saveSettings);
+	$("input[name=MonstersWarnRedRounds]").on("change", saveSettings);
+	$("input[name=showMonsterEffectStackLevel]").on("click", saveSettings);
+	$("input[name=isShowEndStats]").on("click", saveSettings);
+	$("input[name=isShowEndProfs]").on("click", saveSettings); //isShowEndProfs added by Ilirith
+	$("input[name=isShowEndProfsMagic]").on("click", saveSettings); //isShowEndProfs added by Ilirith
+	$("input[name=isShowEndProfsArmor]").on("click", saveSettings); //isShowEndProfs added by Ilirith
+	$("input[name=isShowEndProfsWeapon]").on("click", saveSettings); //isShowEndProfs added by Ilirith
+	$("input[name=autoAdvanceBattleRound]").on("click", saveSettings);
+	$("input[name=autoAdvanceBattleRoundDelay]").on("change", saveSettings);
 
 	// Warning System
 	// - Display Method
-	$("input[name=isCondenseAlerts]").click(saveSettings);
-	$("input[name=delayRoundEndAlerts]").click(saveSettings);
+	$("input[name=isCondenseAlerts]").on("click", saveSettings);
+	$("input[name=delayRoundEndAlerts]").on("click", saveSettings);
 	// - Self Status
-	$("input[name=isHighlightQC]").click(saveSettings);
-	$("input[name=warnOrangeLevel]").change(saveSettings);
-	$("input[name=warnRedLevel]").change(saveSettings);
-	$("input[name=warnAlertLevel]").change(saveSettings);
-	$("input[name=warnOrangeLevelMP]").change(saveSettings);
-	$("input[name=warnRedLevelMP]").change(saveSettings);
-	$("input[name=warnAlertLevelMP]").change(saveSettings);
-	$("input[name=warnOrangeLevelSP]").change(saveSettings);
-	$("input[name=warnRedLevelSP]").change(saveSettings);
-	$("input[name=warnAlertLevelSP]").change(saveSettings);
-	$("input[name=isShowPopup]").click(saveSettings);
-	$("input[name=isNagHP]").click(saveSettings);
-	$("input[name=isNagMP]").click(saveSettings);
-	$("input[name=isNagSP]").click(saveSettings);
-	$("input[name=isWarnH]").click(saveSettings);
-	$("input[name=isWarnA]").click(saveSettings);
-	$("input[name=isWarnGF]").click(saveSettings);
-	$("input[name=isWarnIW]").click(saveSettings);
-	$("input[name=isWarnCF]").click(saveSettings);
+	$("input[name=isHighlightQC]").on("click", saveSettings);
+	$("input[name=warnOrangeLevel]").on("change", saveSettings);
+	$("input[name=warnRedLevel]").on("change", saveSettings);
+	$("input[name=warnAlertLevel]").on("change", saveSettings);
+	$("input[name=warnOrangeLevelMP]").on("change", saveSettings);
+	$("input[name=warnRedLevelMP]").on("change", saveSettings);
+	$("input[name=warnAlertLevelMP]").on("change", saveSettings);
+	$("input[name=warnOrangeLevelSP]").on("change", saveSettings);
+	$("input[name=warnRedLevelSP]").on("change", saveSettings);
+	$("input[name=warnAlertLevelSP]").on("change", saveSettings);
+	$("input[name=isShowPopup]").on("click", saveSettings);
+	$("input[name=isNagHP]").on("click", saveSettings);
+	$("input[name=isNagMP]").on("click", saveSettings);
+	$("input[name=isNagSP]").on("click", saveSettings);
+	$("input[name=isWarnH]").on("click", saveSettings);
+	$("input[name=isWarnA]").on("click", saveSettings);
+	$("input[name=isWarnGF]").on("click", saveSettings);
+	$("input[name=isWarnIW]").on("click", saveSettings);
+	$("input[name=isWarnCF]").on("click", saveSettings);
 	// - Event Notifications
-	$("input[name=isAlertGem]").click(saveSettings);
-	$("input[name=isAlertGemHealth]").click(saveSettings);
-	$("input[name=isAlertGemMana]").click(saveSettings);
-	$("input[name=isAlertGemSpirit]").click(saveSettings);
-	$("input[name=isAlertGemMystic]").click(saveSettings);
-	$("input[name=isAlertOverchargeFull]").click(saveSettings);
-	$("input[name=isWarnAbsorbTrigger]").click(saveSettings);
-	$("input[name=isWarnSparkTrigger]").click(saveSettings);
-	$("input[name=isWarnSparkExpire]").click(saveSettings);
-	$("input[name=alertWhenChannelingIsGained]").click(saveSettings);
-	$("input[name=alertWhenCooldownExpiredForDrain]").click(saveSettings);
+	$("input[name=isAlertGem]").on("click", saveSettings);
+	$("input[name=isAlertGemHealth]").on("click", saveSettings);
+	$("input[name=isAlertGemMana]").on("click", saveSettings);
+	$("input[name=isAlertGemSpirit]").on("click", saveSettings);
+	$("input[name=isAlertGemMystic]").on("click", saveSettings);
+	$("input[name=isAlertOverchargeFull]").on("click", saveSettings);
+	$("input[name=isWarnAbsorbTrigger]").on("click", saveSettings);
+	$("input[name=isWarnSparkTrigger]").on("click", saveSettings);
+	$("input[name=isWarnSparkExpire]").on("click", saveSettings);
+	$("input[name=alertWhenChannelingIsGained]").on("click", saveSettings);
+	$("input[name=alertWhenCooldownExpiredForDrain]").on("click", saveSettings);
 	// - Effects Expiring Warnings
-	$("input[name=isMainEffectsAlertSelf]").click(saveSettings);
-	$("input[name^=isEffectsAlertSelf]").click(saveSettings);
-	$("input[name^=EffectsAlertSelfRounds]").change(saveSettings);
-	$("input[name=isMainEffectsAlertMonsters]").click(saveSettings);
-	$("input[name^=isEffectsAlertMonsters]").click(saveSettings);
-	$("input[name^=EffectsAlertMonstersRounds]").change(saveSettings);
+	$("input[name=isMainEffectsAlertSelf]").on("click", saveSettings);
+	$("input[name^=isEffectsAlertSelf]").on("click", saveSettings);
+	$("input[name^=EffectsAlertSelfRounds]").on("change", saveSettings);
+	$("input[name=isMainEffectsAlertMonsters]").on("click", saveSettings);
+	$("input[name^=isEffectsAlertMonsters]").on("click", saveSettings);
+	$("input[name^=EffectsAlertMonstersRounds]").on("change", saveSettings);
 
 	// Monster Information
 	// - Monster Database
-	$("input[name=isRememberScan]").click(saveSettings);
-	$("input[name=isRememberSkillsTypes]").click(saveSettings);
+	$("input[name=isRememberScan]").on("click", saveSettings);
+	$("input[name=isRememberSkillsTypes]").on("click", saveSettings);
 	// - Monster Display
-	$("input[name=doesScaleMonsterGauges]").click(saveSettings);
-	$("input[name=showMonsterHP]").click(saveSettings);
-	$("input[name=showMonsterHPPercent]").click(saveSettings);
-	$("input[name=showMonsterMP]").click(saveSettings);
-	$("input[name=showMonsterSP]").click(saveSettings);
-	$("input[name=showMonsterInfoFromDB]").click(saveSettings);
-	$("input[name=showMonsterClassFromDB]").click(saveSettings);
-	$("input[name=showMonsterPowerLevelFromDB]").click(saveSettings);
-	$("input[name=showMonsterAttackTypeFromDB]").click(saveSettings);
-	$("input[name=showMonsterWeaknessesFromDB]").click(saveSettings);
-	$("input[name=showMonsterResistancesFromDB]").click(saveSettings);
-	$("input[name=hideSpecificDamageType0]").click(saveSettings);
-	$("input[name=hideSpecificDamageType1]").click(saveSettings);
-	$("input[name=hideSpecificDamageType2]").click(saveSettings);
-	$("input[name=hideSpecificDamageType3]").click(saveSettings);
-	$("input[name=hideSpecificDamageType4]").click(saveSettings);
-	$("input[name=hideSpecificDamageType5]").click(saveSettings);
-	$("input[name=hideSpecificDamageType6]").click(saveSettings);
-	$("input[name=hideSpecificDamageType7]").click(saveSettings);
-	$("input[name=hideSpecificDamageType8]").click(saveSettings);
-	$("input[name=hideSpecificDamageType10]").click(saveSettings);
-	$("input[name=ResizeMonsterInfo]").click(saveSettings);
-	$("input[name=isShowStatsPopup]").click(saveSettings);
-	$("input[name=monsterPopupDelay]").change(saveSettings);
-	$("input[name=isMonsterPopupPlacement]").click(saveSettings);
+	$("input[name=doesScaleMonsterGauges]").on("click", saveSettings);
+	$("input[name=showMonsterHP]").on("click", saveSettings);
+	$("input[name=showMonsterHPPercent]").on("click", saveSettings);
+	$("input[name=showMonsterMP]").on("click", saveSettings);
+	$("input[name=showMonsterSP]").on("click", saveSettings);
+	$("input[name=showMonsterInfoFromDB]").on("click", saveSettings);
+	$("input[name=showMonsterClassFromDB]").on("click", saveSettings);
+	$("input[name=showMonsterPowerLevelFromDB]").on("click", saveSettings);
+	$("input[name=showMonsterAttackTypeFromDB]").on("click", saveSettings);
+	$("input[name=showMonsterWeaknessesFromDB]").on("click", saveSettings);
+	$("input[name=showMonsterResistancesFromDB]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType0]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType1]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType2]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType3]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType4]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType5]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType6]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType7]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType8]").on("click", saveSettings);
+	$("input[name=hideSpecificDamageType10]").on("click", saveSettings);
+	$("input[name=ResizeMonsterInfo]").on("click", saveSettings);
+	$("input[name=isShowStatsPopup]").on("click", saveSettings);
+	$("input[name=monsterPopupDelay]").on("change", saveSettings);
+	$("input[name=isMonsterPopupPlacement]").on("click", saveSettings);
 
-	$("._resetSettings").click(function () {
+	$("._resetSettings").on("click", function () {
 		if (confirm("Reset Settings to default?"))
 			hvStat.settings.reset();
 	});
-	$("._resetAll").click(function () {
+	$("._resetAll").on("click", function () {
 		if (confirm("Reset All Tracking data?"))
 			HVResetTracking();
 	});
-	$("._masterReset").click(function () {
+	$("._masterReset").on("click", function () {
 		if (confirm("This will delete ALL HV data saved in localStorage.\nAre you sure you want to do this?"))
 			HVMasterReset();
 	});

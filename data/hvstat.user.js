@@ -21,7 +21,7 @@
 // @resource        hide-logo.css                               css/hide-logo.css
 // @resource        hvstat.css                                  css/hvstat.css
 // @resource        hvstat-ui.css                               css/hvstat-ui.css
-// @resource        jquery-ui-1.11.4.custom.min.css             css/jquery-ui-1.11.4.custom.min.css
+// @resource        jquery-ui-1.14.1.custom.min.css             css/jquery-ui-1.14.1.custom.min.css
 // @resource        channeling.png                              css/images/channeling.png
 // @resource        healthpot.png                               css/images/healthpot.png
 // @resource        manapot.png                                 css/images/manapot.png
@@ -42,8 +42,8 @@
 // @resource        hvstat-migration.js                         scripts/hvstat-migration.js
 // @resource        hvstat-noncombat.js                         scripts/hvstat-noncombat.js
 // @resource        hvstat-ui.js                                scripts/hvstat-ui.js
-// @resource        jquery-2.2.4.min.js                         scripts/jquery-2.2.4.min.js
-// @resource        jquery-ui-1.11.4.custom.min.js              scripts/jquery-ui-1.11.4.custom.min.js
+// @resource        jquery-3.7.1.min.js                         scripts/jquery-3.7.1.min.js
+// @resource        jquery-ui-1.14.1.custom.min.js              scripts/jquery-ui-1.14.1.custom.min.js
 // @run-at          document-start
 // ==/UserScript==
 
@@ -1218,7 +1218,7 @@ hvStat.gadget = {
 		new browserAPI.I("images/", "animated-overlay.gif", "css/images/"),
 	],
 	addStyle: function () {
-		browserAPI.extension.style.addFromResource("css/", "jquery-ui-1.11.4.custom.min.css", this.imageResources);
+		browserAPI.extension.style.addFromResource("css/", "jquery-ui-1.14.1.custom.min.css", this.imageResources);
 	},
 	initialize: function () {
 		if (hvStat.settings.isShowEquippedSet || hvStat.settings.isShowSidebarProfs) {
