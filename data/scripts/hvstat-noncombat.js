@@ -82,21 +82,7 @@ hvStat.noncombat.support = {
 			hvStat.characterStatus.difficulty.name +
 			' difficulty, with set number: ' +
 			hvStat.characterStatus.equippedSet + '?\n';
-		var modifier = function(message) {
-			var elements = document.querySelectorAll('#mainpane img[onclick*="init_battle"]');
-			var i, element;
-			var makeNewOnClick = function(oldOnClick, message) {
-				return function(event) {
-					if (confirm(message)) {
-						oldOnClick(event);
-					}
-				}
-			}
-			for (i = 0; i < elements.length; i++) {
-				elements[i].onclick = makeNewOnClick(elements[i].onclick, message);
-			}
-		}
-		browserAPI.extension.modifyEventHandler(modifier, message);
+		browserAPI.extension.runScriptInPageContext('confirmBeforeBattle', encodeURIComponent(message));
 	},
 };
 
@@ -152,12 +138,10 @@ hvStat.noncombat.support.popup = {
 hvStat.noncombat.inventory = {};
 
 hvStat.noncombat.inventory.equipment = {
-	showTagInputFields: function (doClean) {
+	showTagInputFields: async function (doClean) {
 		var dynjs_equip = null, dynjs_eqstore = null;
 		if (browserAPI.isChrome) {
-			script = "if (typeof dynjs_equip !== 'undefined') {document.body.setAttribute('dynjs_equip', JSON.stringify(dynjs_equip));}";
-			script += "if (typeof dynjs_eqstore !== 'undefined') {document.body.setAttribute('dynjs_eqstore', JSON.stringify(dynjs_eqstore));}";
-			browserAPI.extension.runScriptInPageContext(script);
+			await browserAPI.extension.runScriptInPageContext('getDynJSEquip', '');
 			dynjs_equip = JSON.parse(document.body.getAttribute('dynjs_equip'));
 			dynjs_eqstore = JSON.parse(document.body.getAttribute('dynjs_eqstore'));
 			document.body.removeAttribute('dynjs_equip');

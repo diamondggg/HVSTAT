@@ -9,7 +9,7 @@
 // @exclude         http://alt.hentaiverse.org/pages/showequip*
 // @exclude         http://alt.hentaiverse.org/?login*
 // @author          Various (http://forums.e-hentai.org/index.php?showtopic=79552)
-// @version         5.7.1
+// @version         5.7.2
 // @require         scripts/util.js
 // @require         scripts/browser.js
 // @require         scripts/hv.js
@@ -59,7 +59,7 @@ window.IDBCursor = window.IDBCursor || window.webkitIDBCursor;
 // HV STAT object
 //------------------------------------
 var hvStat = {
-	version: "5.7.1",
+	version: "5.7.2",
 	imageResources: [
 		new browserAPI.I("images/", "channeling.png", "css/images/"),
 		new browserAPI.I("images/", "healthpot.png", "css/images/"),
@@ -1245,9 +1245,9 @@ hvStat.gadget.wrenchIcon = {
 		icon.addEventListener("mouseout", this.onmouseout);
 		parent.insertBefore(icon, null);
 	},
-	onclick: function (event) {
+	onclick: async function (event) {
 		this.removeEventListener(event.type, arguments.callee);
-		browserAPI.extension.loadScript("scripts/", "hvstat-ui.js");
+		await browserAPI.extension.loadScript("scripts/", "hvstat-ui.js");
 		hvStat.ui.createDialog();
 	},
 	onmouseover: function (event) {
@@ -1290,11 +1290,11 @@ hvStat.gadget.proficiencyPopupIcon = {
 		var parent = util.document.body.querySelector('#csp');
 		parent.insertBefore(this.icon, null);
 	},
-	createPopup: function () {
+	createPopup: async function () {
 		this.popup = document.createElement("div");
 		this.popup.id = "hvstat-proficiency-popup";
 		if (this.showProfData) {
-			this.popup.innerHTML = browserAPI.extension.getResourceText("html/", "proficiency-table.html");
+			this.popup.innerHTML = await browserAPI.extension.getResourceText("html/", "proficiency-table.html");
 			var tableData = this.popup.querySelectorAll('td');
 			var prof = hvStat.characterStatus.proficiencies;
 			//Equipment
@@ -1320,15 +1320,15 @@ hvStat.gadget.proficiencyPopupIcon = {
 		}
 		this.icon.appendChild(this.popup);
 	},
-	onmouseover: function (event) {
+	onmouseover: async function (event) {
 		if (!hvStat.gadget.proficiencyPopupIcon.popup) {
-			hvStat.gadget.proficiencyPopupIcon.createPopup();
+			await hvStat.gadget.proficiencyPopupIcon.createPopup();
 		}
 		hvStat.gadget.proficiencyPopupIcon.popup.style.visibility = "visible";
 	},
-	onmouseout: function (event) {
+	onmouseout: async function (event) {
 		if (!hvStat.gadget.proficiencyPopupIcon.popup) {
-			hvStat.gadget.proficiencyPopupIcon.createPopup();
+			await hvStat.gadget.proficiencyPopupIcon.createPopup();
 		}
 		hvStat.gadget.proficiencyPopupIcon.popup.style.visibility = "hidden";
 	},
@@ -4109,13 +4109,13 @@ hvStat.battle.monster.popup = {
 		}
 	},
 	_templateHTML: null,
-	get templateHTML() {
+	getTemplateHTML: async function () {
 		if (!this._templateHTML) {
-			this._templateHTML = browserAPI.extension.getResourceText("html/", "monster-popup.html");
+			this._templateHTML = await browserAPI.extension.getResourceText("html/", "monster-popup.html");
 		}
 		return this._templateHTML;
 	},
-	show: function (event) {
+	show: async function (event) {
 		var i, index = -1;
 		for (i = 0; i < hvStat.battle.monster.monsters.length; i++) {
 			if (hvStat.battle.monster.monsters[i].baseElement.id === this.id) {
@@ -4126,7 +4126,7 @@ hvStat.battle.monster.popup = {
 		if (index < 0) return;
 		hv.elementCache.popup.style.width = "290px";
 		hv.elementCache.popup.style.height = "auto";
-		hv.elementCache.popup.innerHTML = hvStat.battle.monster.popup.templateHTML;
+		hv.elementCache.popup.innerHTML = await hvStat.battle.monster.popup.getTemplateHTML();
 		hvStat.battle.monster.monsters[index].setPopupContents(hv.elementCache.popup);
 		var popupTopOffset = hv.battle.elementCache.monsterPane.offsetTop +
 			index * ((hv.battle.elementCache.monsterPane.scrollHeight - hv.elementCache.popup.scrollHeight) / 9);
@@ -5664,7 +5664,7 @@ hvStat.startup = {
 			});
 		}
 	},
-	phase2: function () {
+	phase2: async function () {
 		hv.initialize();
 		hvStat.addStyle();
 		if (hvStat.settings.isChangePageTitle) {
@@ -5681,26 +5681,7 @@ hvStat.startup = {
 				this.domObserver.observe(document.getElementById('pane_log'), {childList:true, attributes:false, characterData:false, subtree:true});
 			}
 			if (hvStat.settings.adjustKeyEventHandling) {
-				var modifier = function() {
-					var onkeydown = null;
-					document.addEventListener("hvstatcomplete", function(event) {
-						this.removeEventListener(event.type, arguments.callee);
-						if (onkeydown) document.onkeydown = onkeydown;
-					});
-					var disableDocumentKeydown = function() {
-						onkeydown = document.onkeydown;
-						document.onkeydown = null;
-					}
-					if (document.readyState !== "loading") {
-						disableDocumentKeydown();
-					} else {
-						document.addEventListener("readystatechange", function(event) {
-							this.removeEventListener(event.type, arguments.callee);
-							disableDocumentKeydown();
-						});
-					}
-				}
-				browserAPI.extension.modifyEventHandler(modifier, "");
+				await browserAPI.extension.runScriptInPageContext("adjustKeyEventHandling", "");
 			}
 			hvStat.startup.battleUpdate(true);
 			document.addEventListener("keydown", hvStat.battle.keyboard.documentKeydown);
@@ -5712,7 +5693,7 @@ hvStat.startup = {
 		} else {
 			hvStat.storage.roundContext.remove();
 			hvStat.storage.warningState.remove();
-			browserAPI.extension.loadScript("scripts/", "hvstat-noncombat.js");
+			await browserAPI.extension.loadScript("scripts/", "hvstat-noncombat.js");
 			if (hvStat.settings.isStartAlert || hvStat.settings.isShowEquippedSet ||
 					hvStat.settings.isTrackItems || hvStat.settings.isTrackShrine) {
 				hvStat.noncombat.support.captureStatuses();
@@ -5755,7 +5736,7 @@ hvStat.startup = {
 					hvStat.noncombat.support.popup.addObserver();
 				}
 				if (hvStat.settings.isDisableForgeHotKeys) {
-					browserAPI.extension.modifyEventHandler(function() { document.onkeypress = null; }, "");
+					browserAPI.extension.runScriptInPageContext("disableForgeHotKeys", "");
 				}
 				break;
 			case "moogleMailWriteNew":

@@ -9,36 +9,22 @@ var browserAPI = {
 
 browserAPI.extension = {
 	getResourceURL: function (resourcePath, resourceName) {
-		return chrome.extension.getURL(resourcePath + resourceName);
+		return chrome.runtime.getURL(resourcePath + resourceName);
 	},
-	getResourceText: function (resourcePath, resourceName) {
-		var resourceText;
-		var request = new XMLHttpRequest();
-		var resourceURL = browserAPI.extension.getResourceURL(resourcePath, resourceName);
-		request.open("GET", resourceURL, false);
-		request.send(null);
-		return request.responseText;
+	getResourceText: async function (resourcePath, resourceName) {
+		var response = await fetch(browserAPI.extension.getResourceURL(resourcePath, resourceName));
+		return await response.text();
 	},
-	loadScript: function (scriptPath, scriptName) {
-		eval.call(window, browserAPI.extension.getResourceText(scriptPath, scriptName));
+	loadScript: async function (scriptPath, scriptName) {
+		await import(chrome.runtime.getURL(scriptPath + scriptName));
 	},
-	eventHandlerId: 0,
-	runScriptInPageContext: function (script) {
-		if (browserAPI.isChrome) {
-			var scriptElement = document.createElement("script");
-			scriptElement.type = "text/javascript";
-			var id = "hvstat-tempjs-" + this.eventHandlerId++;
-			scriptElement.id = id;
-			scriptElement.textContent = script + "document.body.removeChild(document.getElementById('"+id+"'));";
-			document.body.appendChild(scriptElement);
-		} else {
-			// Firefox has window.eval to evaluate in context of the web page,
-			// should be faster than DOM modifications
-			window.eval(script);
-		}
-	},
-	modifyEventHandler: function (modifier, param) {
-		browserAPI.extension.runScriptInPageContext( "(" + modifier.toString() + ")(" + JSON.stringify(param) + ");");
+	runScriptInPageContext: async function (scriptId, params) {
+		var scriptElement = document.createElement("script");
+		var completed = new Promise(resolve => scriptElement.onload = () => resolve());
+		scriptElement.type = "text/javascript";
+		scriptElement.src = chrome.runtime.getURL("/scripts/injected.js#" + scriptId + "::" + params);
+		document.body.appendChild(scriptElement);
+		await completed;
 	}
 };
 
@@ -52,8 +38,8 @@ browserAPI.extension.style = {
         }
         this.element.textContent += "\n" + styleText;
 	},
-	addFromResource: function (styleResourcePath, styleResouceName, imageResouceInfoArray) {
-		var styleText = browserAPI.extension.getResourceText(styleResourcePath, styleResouceName);
+	addFromResource: async function (styleResourcePath, styleResouceName, imageResouceInfoArray) {
+		var styleText = await browserAPI.extension.getResourceText(styleResourcePath, styleResouceName);
 		if (Array.isArray(imageResouceInfoArray)) {
 			// Replace image URLs
 			for (var i = 0; i < imageResouceInfoArray.length; i++) {

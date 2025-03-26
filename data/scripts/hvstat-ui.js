@@ -3,12 +3,12 @@
 //------------------------------------
 hvStat.ui = {
 	// jQuery and jQuery UI must not be used except on the dialog panel for performance reason.
-	createDialog: function () {
+	createDialog: async function () {
 		// Load jQuery and jQuery UI
-		browserAPI.extension.loadScript("scripts/", "jquery-2.2.4.min.js");
-		browserAPI.extension.loadScript("scripts/", "jquery-ui-1.11.4.custom.min.js");
+		await browserAPI.extension.loadScript("scripts/", "jquery-2.2.4.min.js");
+		await browserAPI.extension.loadScript("scripts/", "jquery-ui-1.11.4.custom.min.js");
 		// Load CSS for the dialog
-		browserAPI.extension.style.addFromResource("css/", "hvstat-ui.css");
+		await browserAPI.extension.style.addFromResource("css/", "hvstat-ui.css");
         browserAPI.extension.style.add(
             ".ui-widget-overlay {background: #000 url(" +
             browserAPI.extension.getResourceURL("css/images/", "hvs.gif") +
@@ -19,11 +19,11 @@ hvStat.ui = {
             ".ui-tabs .ui-tabs-anchor:focus{outline:none;color:#B77}"
         );
 
-		browserAPI.extension.loadScript("scripts/", "hvstat-migration.js");
+		await browserAPI.extension.loadScript("scripts/", "hvstat-migration.js");
 
 		var panel = document.createElement("div");
 		panel.id = "hvstat-panel";
-		$(panel).html(browserAPI.extension.getResourceText("html/", "main.html"));
+		$(panel).html(await browserAPI.extension.getResourceText("html/", "main.html"));
 		$('body').append(panel);
 		$(panel).dialog({
 			autoOpen: false,
@@ -56,13 +56,13 @@ hvStat.ui = {
 
 hvStat.ui.dropsPane = {
 	dropsDisplayTable: null,
-	initialize: function () {
+	initialize: async function () {
 		var nChances = hvStat.statistics.drops.nChances(null, null, null);
 		var innerHTML;
 		if (nChances === 0) {
 			innerHTML = "No data found. Complete a round to begin tracking.";
 		} else {
-			innerHTML = browserAPI.extension.getResourceText("html/", "drops-pane.html");
+			innerHTML = await browserAPI.extension.getResourceText("html/", "drops-pane.html");
 		}
 		$('#hvstat-drops-pane').html(innerHTML);
 		if (nChances === 0) {
@@ -72,7 +72,7 @@ hvStat.ui.dropsPane = {
 		if (!hvStat.settings.isTrackItems) {
 			$('#hvstat-drops-pane .hvstat-tracking-paused').show();
 		}
-		this.dropsDisplayTable = JSON.parse(browserAPI.extension.getResourceText("json/", "drops-display-table.json"));
+		this.dropsDisplayTable = JSON.parse(await browserAPI.extension.getResourceText("json/", "drops-display-table.json"));
 
 		// Overall Stats
 		$('#hvstat-drops-overall-stats-drop-type').change(this.onOverallStatsFilterChange);
@@ -356,8 +356,8 @@ hvStat.ui.dropsPane = {
 };
 
 hvStat.ui.databasePane = {
-	initialize: function () {
-		$('#hvstat-database-pane').html(browserAPI.extension.getResourceText("html/", "database-pane.html"));
+	initialize: async function () {
+		$('#hvstat-database-pane').html(await browserAPI.extension.getResourceText("html/", "database-pane.html"));
 		this.showSizeOfOldMonsterDatabase();
 		$('#hvstat-database-monster-scan-results-export').click(function () {
 			hvStat.database.monsterScanResults.export(function (result) {
@@ -651,10 +651,10 @@ hvStat.ui.databasePane = {
 	},
 };
 
-function initOverviewPane() {
+async function initOverviewPane() {
 	var innerHTML;
 	if (hvStat.overview.totalRounds > 0) {
-		innerHTML = browserAPI.extension.getResourceText("html/", "overview-pane.html");
+		innerHTML = await browserAPI.extension.getResourceText("html/", "overview-pane.html");
 	} else {
 		innerHTML = "No data found. Complete a round to begin tracking.";
 	}
@@ -828,10 +828,10 @@ function initOverviewPane() {
 	});
 }
 
-function initBattleStatsPane() {
+async function initBattleStatsPane() {
 	var innerHTML;
 	if (hvStat.stats.rounds > 0) {
-		innerHTML = browserAPI.extension.getResourceText("html/", "battle-stats-pane.html");
+		innerHTML = await browserAPI.extension.getResourceText("html/", "battle-stats-pane.html");
 	} else {
 		innerHTML = "No data found. Complete a round to begin tracking.";
 	}
@@ -1004,12 +1004,12 @@ function initBattleStatsPane() {
 	});
 }
 
-function initShrinePane() {
+async function initShrinePane() {
 	var innerHTML;
 	if (hvStat.shrine.totalRewards === 0) {
 		innerHTML = "No data found. Make an offering at Snowflake's Shrine to begin tracking.";
 	} else {
-		innerHTML = browserAPI.extension.getResourceText("html/", "shrine-pane.html");
+		innerHTML = await browserAPI.extension.getResourceText("html/", "shrine-pane.html");
 	}
 	$('#hvstat-shrine-pane').html(innerHTML);
 	if (hvStat.shrine.totalRewards > 0) {
@@ -1055,8 +1055,8 @@ function initShrinePane() {
 	}
 }
 
-function initSettingsPane() {
-	$("#hvstat-settings-pane").html(browserAPI.extension.getResourceText("html/", "settings-pane.html"));
+async function initSettingsPane() {
+	$("#hvstat-settings-pane").html(await browserAPI.extension.getResourceText("html/", "settings-pane.html"));
 
 	//------------------------------------
 	// Set initial values
