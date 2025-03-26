@@ -68,8 +68,6 @@ hv.util = {
 					text.push(this.hvFontMap[className]);
 				}
 			}
-			if (textBlocks[i].className.split(' ').indexOf('fl') === -1)
-				text.reverse();
 			innerText += text.join('');
 			innerText += " ";	//	Separator between text blocks
 		}
